@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
-const cors = require('cors');
+const cors = require('cors'); // <-- Agregado para resolver el error CORS
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,10 +15,10 @@ if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
     process.exit(1);
 }
 
-// Middleware para servir archivos estáticos y para habilitar CORS
+// Middleware para habilitar CORS, servir archivos estáticos y procesar JSON
+app.use(cors()); // <-- Habilita las conexiones entre tu web y tu servidor
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
-app.use(cors());
 
 // Función de ayuda para escapar caracteres de Markdown
 function escapeMarkdownV2(text) {
