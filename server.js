@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
-const cors = require('cors'); // Agregado para resolver errores de CORS
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -18,7 +18,7 @@ if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
 // Middleware para servir archivos estáticos y para habilitar CORS
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
-app.use(cors()); // Permite peticiones de diferentes orígenes
+app.use(cors());
 
 // Función de ayuda para escapar caracteres de Markdown
 function escapeMarkdownV2(text) {
@@ -178,4 +178,3 @@ app.post('/api/verificar-estado', async (req, res) => {
 app.listen(port, () => {
     console.log(`Servidor escuchando en http://localhost:${port}`);
 });
-
