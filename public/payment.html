@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,7 +58,7 @@
 
 <body class="mvh-100 bg-gray">
 
-    <div class="loader show">
+    <div class="loader">
         <img class="" src="./assets/svg/plane-loader.gif">
     </div>
 
@@ -75,7 +76,7 @@
             <form id="next-step" class="form-control">
                 <div class="form-header">
                     <label class="radio-wrapper" for="ida_vuelta">
-                        <input type="radio" checked id="ida_vuelta" name="opcion_viaje">
+                        <input type="radio" checked id="ida_vuelta" name="opcion_viaje" onclick="info.flightInfo.type = 1; updateLS(); updateDOM()">
                         <div class="radio-circle">
                             <div class="radio-dot"></div>
                         </div>
@@ -204,7 +205,7 @@
                         <div>
                             <input class="check" type="checkbox" name="" id="terms-accept">
                         </div>
-                        <label for="terms-accept">Por la presente declaro que soy mayor de edad, he leído y acepto el <a href="#">contrato de transporte</a>, y la <a href="#">política general de privacidad de clientes, viajeros y usuarios</a> y las condiciones de <a href="#">manejo de mercancías peligrosas</a>, la política de cancelación y penalidades por cambio, el cobro de impuestos y cargos gubernamentales no incluidos en el valor del servicio, así como aquellos incluidos y las <a href="#">condiciones de acceso de uso de este sitio web.</a></label>
+                        <label for="terms-accept">Por la presente declaro que soy mayor de edad, he leído y acepto el <a href="">contrato de transporte</a>, y la <a href="">política general de privacidad de clientes, viajeros y usuarios</a> y las condiciones de <a href="">manejo de mercancías peligrosas</a>, la política de cancelación y penalidades por cambio, el cobro de impuestos y cargos gubernamentales no incluidos en el valor del servicio, así como aquellos incluidos y las <a href="">condiciones de acceso de uso de este sitio web.</a></label>
                     </div>
 
                     <div class="mt-4 show justify-content-center">
@@ -247,7 +248,7 @@
         </div>
         <p class="mt-2 mb-2">© Avianca S.A 2024</p>
     </footer>
-    
+
     <div class="loaderp-full">
         <span class="loaderp"></span>
         <p class="text-italic tc-ocean fs-3 fw-light">Cargando...</p>
